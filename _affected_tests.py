@@ -150,13 +150,17 @@ def main():
     if explicit:
         syms, fallback, paths = set(explicit), [], ["<--symbols>"]
     else:
-        if "__GIT__" in rest:
+        use_git = "__GIT__" in rest
+        if use_git:
             rest.remove("__GIT__")
             paths = changed_files_from_git(baseline)
+            if not paths:
+                print("# 相对基线 %s 无改动文件 ⇒ 相关集为空（无需跑测试）" % baseline)
+                return
         else:
             paths = rest
-        if not paths:
-            raise SystemExit(__doc__)
+            if not paths:
+                raise SystemExit(__doc__)
         syms, fallback = changed_symbols(paths, baseline)
 
     hit = tests_for(syms)
