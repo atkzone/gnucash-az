@@ -32,6 +32,24 @@
         android:background="?selectableItemBackground"
         android:padding="4dp">
 
+        <!-- Bulk-selection tick (search results only). GONE by default; a
+             GONE view collapses to a point in ConstraintLayout, so the rows that
+             never enter selection mode keep their exact old layout. -->
+        <CheckBox
+            android:id="@+id/selection_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:checked="false"
+            android:clickable="false"
+            android:contentDescription="@string/bulk_select_item"
+            android:focusable="false"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
+
         <include
             android:id="@+id/list_item_2_lines"
             layout="@layout/list_item_2_lines"
@@ -39,7 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toStartOf="@id/options_menu"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/selection_check"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
@@ -93,5 +111,71 @@
             app:layout_constraintStart_toStartOf="@id/list_item_2_lines"
             app:layout_constraintTop_toBottomOf="@id/list_item_2_lines"
             tools:text="@tools:sample/date/ddmmyy" />
+
+        <!-- Tag chips (feature ⑧). Hidden by default: only the search results
+             holder fills it, so TransactionsListFragment is unaffected. -->
+        <HorizontalScrollView
+            android:id="@+id/tag_chips_scroll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:scrollbars="none"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintStart_toStartOf="@id/list_item_2_lines"
+            app:layout_constraintTop_toBottomOf="@id/transaction_date"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:id="@+id/tag_chips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <!-- Extended-view lines (第二十四轮). Hidden by default: only
+             TransactionsListFragment fills them, and only while an extended view
+             is active. Every child is GONE too, so a row that shows nothing keeps
+             its exact old height. -->
+        <LinearLayout
+            android:id="@+id/extended_fields"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintStart_toStartOf="@id/list_item_2_lines"
+            app:layout_constraintTop_toBottomOf="@id/transaction_date">
+
+            <TextView
+                android:id="@+id/extended_notes"
+                style="@style/ListItemSecondaryText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                tools:text="备注" />
+
+            <TextView
+                android:id="@+id/extended_number"
+                style="@style/ListItemSecondaryText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="No. 42" />
+
+            <TextView
+                android:id="@+id/extended_tags"
+                style="@style/ListItemSecondaryText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="#food #travel" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

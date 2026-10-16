@@ -22,6 +22,7 @@ import org.gnucash.android.R
 import org.gnucash.android.ui.report.barchart.StackedBarChartFragment
 import org.gnucash.android.ui.report.linechart.CashFlowLineChartFragment
 import org.gnucash.android.ui.report.piechart.PieChartFragment
+import org.gnucash.android.ui.report.search.SearchResultReportFragment
 import org.gnucash.android.ui.report.sheet.BalanceSheetFragment
 
 /**
@@ -55,6 +56,20 @@ enum class ReportType(
         R.color.report_purple,
         BalanceSheetFragment::class.java
     ),
+
+    /**
+     * The transactions a search matched, rendered as a report.
+     *
+     * ⚠️ Order matters: the toolbar spinner answers with `values()[position]`, so the
+     * entries that may be left out ([SEARCH_RESULT] when nothing was searched, [NONE]
+     * always) must be the LAST ones. A hole in the middle would make every entry below it
+     * open the wrong report.
+     */
+    SEARCH_RESULT(
+        R.string.title_search_report,
+        R.color.report_purple,
+        SearchResultReportFragment::class.java
+    ),
     NONE(
         R.string.title_reports,
         R.color.report_green,
@@ -67,10 +82,16 @@ enum class ReportType(
     companion object {
         private val _values = values()
 
-        fun getReportNames(context: Context): List<String> {
+        /**
+         * @param includeSearchResult whether 搜索结果 belongs in the list. It is only
+         *        meaningful once a search has been run, and leaving it out keeps the
+         *        spinner free of an entry that can never draw anything.
+         */
+        fun getReportNames(context: Context, includeSearchResult: Boolean = true): List<String> {
             val names = mutableListOf<String>()
             for (value in _values) {
                 if (value == NONE) continue
+                if (value == SEARCH_RESULT && !includeSearchResult) continue
                 names.add(context.getString(value.titleId))
             }
             return names

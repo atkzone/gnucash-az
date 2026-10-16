@@ -38,7 +38,7 @@ object DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    const val DATABASE_VERSION: Int = 30
+    const val DATABASE_VERSION: Int = 36
 
     abstract class CommonColumns : BaseColumns {
         companion object {
@@ -537,5 +537,297 @@ object DatabaseSchema {
         const val COLUMN_BYDAY: String = "recurrence_byday"
 
         const val INDEX_UID: String = "recurrence_uid_index"
+    }
+
+    /**
+     * Local-only, UI-level saved search configurations (feature ①a).
+     *
+     * Not part of the GnuCash domain model: there is no `uid` and the rows are
+     * never exported to GnuCash XML. The whole criteria set is kept in the
+     * opaque [COLUMN_FORM] JSON column (see `SearchTemplateCodec`), so the shape
+     * of a search can evolve without changing this table.
+     *
+     * Timestamps are epoch millis (INTEGER) — intentionally NOT the
+     * `CommonColumns` TEXT timestamps, since these rows have no model/trigger.
+     */
+    object SearchTemplateEntry {
+        const val TABLE_NAME: String = "search_templates"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER, readOnly = true)
+        const val COLUMN_ID: String = BaseColumns._ID
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_NAME: String = "name"
+
+        /** Opaque serialised [org.gnucash.android.ui.search.SearchForm] (JSON). */
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_FORM: String = "form_json"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_SORT_ORDER: String = "sort_order"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_CREATED_AT: String = "created_at"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_UPDATED_AT: String = "updated_at"
+    }
+
+    /**
+     * Local-only saved *transaction* templates (feature ①d).
+     *
+     * Deliberately **not** the same thing as [SearchTemplateEntry]: this table
+     * stores the shape of a *new transaction* (debit/credit account, an
+     * **optional** amount and the remaining transaction fields) so it can be
+     * replayed with one tap.
+     *
+     * Like the search templates it is local only — no `uid`, never exported to
+     * GnuCash XML, never part of the sync merge. The whole payload lives in the
+     * opaque [COLUMN_PAYLOAD] JSON column (see `TransactionTemplateCodec`), so
+     * the set of fields can grow without touching this schema again.
+     *
+     * Timestamps are epoch millis (INTEGER) — intentionally NOT the
+     * `CommonColumns` TEXT timestamps, since these rows have no model/trigger.
+     */
+    object TransactionTemplateEntry {
+        const val TABLE_NAME: String = "transaction_templates"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER, readOnly = true)
+        const val COLUMN_ID: String = BaseColumns._ID
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_NAME: String = "name"
+
+        /** Opaque serialised `TransactionTemplate` (JSON). */
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_PAYLOAD: String = "payload_json"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_SORT_ORDER: String = "sort_order"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_CREATED_AT: String = "created_at"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_UPDATED_AT: String = "updated_at"
+    }
+
+    /**
+     * First-class tag entity (feature ⑧).
+     *
+     * GnuCash desktop has no tag entity — its "tags" are just `#tag` tokens inside
+     * description/memo text. To stay compatible we keep the `#tag` text in place
+     * **and** maintain this table (see the dual-write contract, plan §6.3).
+     *
+     * Tag identity is [COLUMN_NAME] (case-insensitive, enforced by a UNIQUE NOCASE
+     * index); [COLUMN_UID] exists so the tag can later be referenced/synced like
+     * any other model without a name-based join.
+     */
+    object TagEntry : CommonColumns() {
+        const val TABLE_NAME: String = "tags"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_UID: String = CommonColumns.COLUMN_UID
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_ID: String = CommonColumns.COLUMN_ID
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_CREATED_AT: String = CommonColumns.COLUMN_CREATED_AT
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_MODIFIED_AT: String = CommonColumns.COLUMN_MODIFIED_AT
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_NAME: String = "name"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_COLOR: String = "color_code"
+
+        const val INDEX_UID: String = "tag_uid_index"
+        const val INDEX_NAME: String = "tag_name_index"
+    }
+
+    /**
+     * Join table linking a transaction to the tags it carries (feature ⑧).
+     *
+     * Deliberately **not** a `CommonColumns` model: it is a pure relation, with no
+     * `uid` of its own (like `budget_amounts`, rows are recreated wholesale on
+     * save). [COLUMN_TAG] stores the tag **name**, because that is exactly what
+     * [org.gnucash.android.ui.search.SearchQueryBuilder] matches against — keeping
+     * the tag predicate a bare `WHERE` fragment (no extra join).
+     *
+     * Both foreign keys cascade on delete: removing a transaction or a tag
+     * removes its links automatically (`PRAGMA foreign_keys=ON` is set on open).
+     */
+    object TransactionTagEntry {
+        const val TABLE_NAME: String = "transaction_tags"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER, readOnly = true)
+        const val COLUMN_ID: String = BaseColumns._ID
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_TRANSACTION_UID: String = "transaction_uid"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_TAG: String = "tag"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_TAG_UID: String = "tag_uid"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_CREATED_AT: String = "created_at"
+
+        const val INDEX_TRANSACTION: String = "transaction_tag_tx_index"
+        const val INDEX_TAG: String = "transaction_tag_tag_index"
+        const val INDEX_UNIQUE: String = "transaction_tag_unique_index"
+    }
+
+    /**
+     * The per-record **base** snapshot used by the bidirectional merge (feature ②
+     * v2, plan §7.1).
+     *
+     * A "base" is the state of a record **as of the last successful sync** —
+     * it is the third input that makes a three-way merge possible at all (without
+     * it, "both sides changed" cannot be told apart from "one side changed").
+     *
+     * Addressable by `(record_type, record_key)` where `record_key` is the
+     * GnuCash GUID; [COLUMN_PAYLOAD] holds an opaque serialised snapshot of the
+     * record's fields, so the shape of a record can evolve without a migration.
+     * [COLUMN_BASE_MODIFIED_AT] is the record's `modified_at` at snapshot time and
+     * doubles as the snapshot's own watermark source.
+     *
+     * [COLUMN_BASE_ETAG] and [COLUMN_PENDING_SINCE] (schema 34) were added when the
+     * round orchestration landed: the first lets a round skip re-downloading an
+     * unchanged record and provides the `If-Match` value for a conditional write;
+     * the second lets "seen absent, not yet confirmed" survive between rounds.
+     */
+    object SyncStateEntry : CommonColumns() {
+        const val TABLE_NAME: String = "sync_state"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_UID: String = CommonColumns.COLUMN_UID
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_ID: String = CommonColumns.COLUMN_ID
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_CREATED_AT: String = CommonColumns.COLUMN_CREATED_AT
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_MODIFIED_AT: String = CommonColumns.COLUMN_MODIFIED_AT
+
+        /** Which model the snapshot is for (`book`/`account`/`transaction`/`split`). */
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_RECORD_TYPE: String = "record_type"
+
+        /** The record's stable identity — the GnuCash GUID. */
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_RECORD_KEY: String = "record_key"
+
+        /** Opaque serialised field snapshot of the record as of the last sync. */
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_PAYLOAD: String = "payload"
+
+        /** `modified_at` of the record when the snapshot was taken (watermark source). */
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_BASE_MODIFIED_AT: String = "base_modified_at"
+
+        /**
+         * The peer's entity tag for the record as of the last successful sync, or
+         * `NULL` when none was seen. Drives both the "skip an unchanged download"
+         * shortcut and the `If-Match` precondition of the next write.
+         */
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_BASE_ETAG: String = "base_etag"
+
+        /**
+         * Epoch millis at which the record was first seen absent from a **complete**
+         * peer listing, or `NULL` when it is not being watched. A second consecutive
+         * absence promotes the record to a tombstone; a reappearance clears this.
+         */
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_PENDING_SINCE: String = "pending_since"
+
+        const val INDEX_UID: String = "sync_state_uid_index"
+        const val INDEX_UNIQUE: String = "sync_state_record_index"
+        const val INDEX_TYPE: String = "sync_state_type_index"
+    }
+
+    /**
+     * An explicit "this record was deleted" marker (feature ② v2, plan §7.1).
+     *
+     * Deletions must travel as markers rather than as absence: an absent record
+     * in a snapshot is indistinguishable from "the listing was truncated", which
+     * has historically caused both ends to delete data (plan §7.3, constraint 2).
+     * A tombstone is therefore only ever written on **confirmed absence**, and its
+     * presence is itself the evidence.
+     */
+    object TombstoneEntry : CommonColumns() {
+        const val TABLE_NAME: String = "tombstones"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_UID: String = CommonColumns.COLUMN_UID
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_ID: String = CommonColumns.COLUMN_ID
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_CREATED_AT: String = CommonColumns.COLUMN_CREATED_AT
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_MODIFIED_AT: String = CommonColumns.COLUMN_MODIFIED_AT
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_RECORD_TYPE: String = "record_type"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_RECORD_KEY: String = "record_key"
+
+        /** Epoch millis at which the deletion was confirmed. */
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        const val COLUMN_DELETED_AT: String = "deleted_at"
+
+        /** Identifier of the device that confirmed the deletion (audit trail). */
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_DEVICE_ID: String = "device_id"
+
+        const val INDEX_UID: String = "tombstone_uid_index"
+        const val INDEX_UNIQUE: String = "tombstone_record_index"
+    }
+
+    /**
+     * A stored "keep this side" answer from the conflict centre (feature ② v3).
+     *
+     * The conflict centre is otherwise a mirror: it shows what a round parked. This table is
+     * the one thing it lets the user *do* — pick a side — and the only way that answer means
+     * anything is for the **next** round to read it. A round cannot apply it on the spot,
+     * because the round that parked the conflict had already decided to touch nothing and the
+     * peer may have moved again by the time the user looks at the screen.
+     *
+     * Deliberately **not** a column on [SyncStateEntry], even though both are keyed by
+     * `(record_type, record_key)`. A resolution must be storable for a record with **no base
+     * row**: "created on both devices with different content" is a conflict with no common
+     * ancestor, so putting the override on the base row would make the most common conflict
+     * unresolvable — there would be nothing to hang it on.
+     *
+     * There is no `uid` and no timestamp pair here, unlike the other sync tables: the row *is*
+     * its `(record_type, record_key)` key plus one value, it is never addressed by a UID, and
+     * nothing orders or ages it. A `created_at` nobody reads would just be one more column to
+     * keep true.
+     */
+    object SyncResolutionEntry {
+        const val TABLE_NAME: String = "sync_resolutions"
+
+        @Column(Cursor.FIELD_TYPE_INTEGER, readOnly = true)
+        const val COLUMN_ID: String = BaseColumns._ID
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_RECORD_TYPE: String = "record_type"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_RECORD_KEY: String = "record_key"
+
+        /**
+         * Which side wins: [org.gnucash.android.sync.ResolveSide.id] (`local` / `remote`).
+         * Stored as the *id*, not the enum name, for the same reason
+         * [org.gnucash.android.sync.SyncRecordType.id] is: renaming the Kotlin constant must
+         * not orphan existing rows.
+         */
+        @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_SIDE: String = "side"
+
+        const val INDEX_UNIQUE: String = "sync_resolution_record_index"
     }
 }

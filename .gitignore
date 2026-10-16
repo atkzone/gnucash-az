@@ -33,3 +33,14 @@ app/google-services.json
 google-cloud-sdk
 gcloud
 instrumentation-test-results
+
+# --- local work artifacts: caches / round backups / test evidence / logs ---
+.kotlin/
+.bite*bak/
+.workbuddy/
+_r*_xml/
+_r*_mut_backup/
+_r*batch_*.txt
+_r*_classlist.txt
+_r*_batches*.txt
+*.log

@@ -68,6 +68,13 @@ class ReportsActivity : BaseDrawerActivity(),
         private set
     private var reportType: ReportType = ReportType.NONE
 
+    /**
+     * The search predicate the reports are limited to, when this screen was opened from a
+     * search result. `null` — the normal case — means the usual account/period reports.
+     */
+    var searchWhere: String? = null
+        private set
+
     enum class GroupInterval {
         WEEK, MONTH, QUARTER, YEAR, ALL
     }
@@ -123,10 +130,11 @@ class ReportsActivity : BaseDrawerActivity(),
         val binding = this.binding!!
 
         val actionBar: ActionBar = supportActionBar!!
+        searchWhere = searchWhereOf(intent)
         val typesAdapter = ArrayAdapter<String?>(
             actionBar.themedContext,
             android.R.layout.simple_list_item_1,
-            getReportNames(context)
+            getReportNames(context, includeSearchResult = searchWhere != null)
         )
         binding.toolbarLayout.toolbarSpinner.adapter = typesAdapter
         binding.toolbarLayout.toolbarSpinner.onItemSelectedListener = reportTypeSelectedListener
@@ -185,7 +193,9 @@ class ReportsActivity : BaseDrawerActivity(),
             }
 
         if (savedInstanceState == null) {
-            showOverview()
+            // Opened from a search: land on that report. The overview's balances answer a
+            // different question than the one the user just asked.
+            if (searchWhere == null) showOverview() else showReport(ReportType.SEARCH_RESULT)
         } else {
             reportType =
                 savedInstanceState.getSerializableCompat(STATE_REPORT_TYPE, ReportType::class.java)
@@ -360,6 +370,33 @@ class ReportsActivity : BaseDrawerActivity(),
         outState.putLong(STATE_REPORT_END, reportPeriodEnd.toMillis())
     }
 
+    /**
+     * A second `showSearchResult` while this screen is already up lands here, because the
+     * launch flags below keep a single instance. [onCreate] — the only other reader of the
+     * extra — does not run again, so without this the previous query would stay on screen.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val where = searchWhereOf(intent) ?: return
+        if (where == searchWhere) return
+        searchWhere = where
+        val binding = this.binding ?: return
+        val actionBar: ActionBar = supportActionBar ?: return
+        binding.toolbarLayout.toolbarSpinner.adapter = ArrayAdapter<String?>(
+            actionBar.themedContext,
+            android.R.layout.simple_list_item_1,
+            getReportNames(this, includeSearchResult = true)
+        )
+        showReport(ReportType.SEARCH_RESULT)
+    }
+
+    /** @return the search predicate carried by [intent], or `null` when it is not a search launch. */
+    private fun searchWhereOf(intent: Intent?): String? {
+        if (intent == null || !intent.hasExtra(EXTRA_SEARCH_WHERE)) return null
+        return intent.getStringExtra(EXTRA_SEARCH_WHERE).orEmpty()
+    }
+
     companion object {
         private const val STATE_REPORT_TYPE = "report_type"
         private const val STATE_REPORT_START = "report_start"
@@ -371,5 +408,22 @@ class ReportsActivity : BaseDrawerActivity(),
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             context.startActivity(intent)
         }
+
+        /**
+         * Opens 报表 limited to the transactions a search matched.
+         *
+         * @param where the **very** WHERE fragment the result list was built from, so the
+         *              report cannot drift from the list it was opened from.
+         */
+        fun showSearchResult(context: Context, where: String?) {
+            val intent = Intent(context, ReportsActivity::class.java)
+                .putExtra(EXTRA_SEARCH_WHERE, where.orEmpty())
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            context.startActivity(intent)
+        }
+
+        /** Marks the launch as "from a search"; its presence — not its value — is the flag. */
+        private const val EXTRA_SEARCH_WHERE = "report_search_where"
     }
 }

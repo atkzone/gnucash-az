@@ -44,11 +44,15 @@
             <item
                 android:id="@+id/nav_item_search"
                 android:icon="@drawable/ic_search"
-                android:title="@string/nav_menu_search" />
+                android:title="@string/nav_menu_advanced_search" />
             <item
                 android:id="@+id/nav_item_scheduled_actions"
                 android:icon="@drawable/ic_schedule"
                 android:title="@string/nav_menu_scheduled_actions" />
+            <item
+                android:id="@+id/nav_item_transaction_templates"
+                android:icon="@drawable/ic_repeat"
+                android:title="@string/title_transaction_templates" />
             <item
                 android:id="@+id/nav_item_export"
                 android:icon="@drawable/ic_backup"

@@ -105,6 +105,12 @@
             android:name="org.gnucash.android.ui.transaction.ScheduledActionsActivity"
             android:exported="false" />
         <activity
+            android:name="org.gnucash.android.ui.template.TransactionTemplatesActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.gnucash.android.ui.transaction.view.ExtendedViewsActivity"
+            android:exported="false" />
+        <activity
             android:name="org.gnucash.android.ui.passcode.PasscodePreferenceActivity"
             android:exported="false"
             android:theme="@style/Theme.GnuCash.NoActionBar" />

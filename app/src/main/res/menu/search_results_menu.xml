@@ -1,0 +1,42 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_search_sort"
+        android:title="@string/search_sort"
+        app:showAsAction="never">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/menu_search_sort_date_desc"
+                    android:title="@string/search_sort_date_desc" />
+                <item
+                    android:id="@+id/menu_search_sort_date_asc"
+                    android:title="@string/search_sort_date_asc" />
+                <item
+                    android:id="@+id/menu_search_sort_amount_desc"
+                    android:title="@string/search_sort_amount_desc" />
+                <item
+                    android:id="@+id/menu_search_sort_amount_asc"
+                    android:title="@string/search_sort_amount_asc" />
+            </group>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_search_select"
+        android:title="@string/menu_search_select"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_search_summary"
+        android:title="@string/search_summary_title"
+        app:showAsAction="never" />
+
+    <!-- 把当前结果集交给导航栏里那套「报表」显示 -->
+    <item
+        android:id="@+id/menu_report_search_results"
+        android:title="@string/menu_report_search_results"
+        app:showAsAction="never" />
+
+</menu>

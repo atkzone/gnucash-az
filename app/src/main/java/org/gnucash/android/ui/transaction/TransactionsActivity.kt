@@ -550,5 +550,14 @@ class TransactionsActivity : BaseDrawerActivity(),
                 .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SEARCH.name)
             context.startActivity(intent)
         }
+
+        /**
+         * Displays the form for searching transactions
+         */
+        fun openFullTextSearch(context: Context) {
+            val intent = Intent(context, FormActivity::class.java)
+                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.FULL_TEXT_SEARCH.name)
+            context.startActivity(intent)
+        }
     }
 }

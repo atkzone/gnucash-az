@@ -1,0 +1,43 @@
+APPLIED m01_bulk_delete_no_transaction (SearchBulkWriter.kt, eol='\n')
+m01_bulk_delete_no_transaction     RED(bitten)                SearchBulkWiringTest > both bulk writes wrap the whole batch in a single transaction FAILED
+APPLIED m02_select_null_keeps_mode_on (ExtendedViewStore.kt, eol='\n')
+m02_select_null_keeps_mode_on      RED(bitten)                ExtendedViewStoreTest > selecting null turns the mode off instead of storing a blank pointer[26] FAILED
+APPLIED m03_update_fields_accepts_empty (ExtendedViewStore.kt, eol='\n')
+m03_update_fields_accepts_empty    RED(bitten)                ExtendedViewStoreTest > updateFields refuses an empty set[26] FAILED
+APPLIED m04_has_extra_lines_always_true (ExtendedRowContent.kt, eol='\n')
+m04_has_extra_lines_always_true    RED(bitten)                ExtendedRowContentTest > extra lines follow notes, number and tags but never the account FAILED
+APPLIED m05_manual_date_lenient (ManualDate.kt, eol='\n')
+m05_manual_date_lenient            RED(bitten)                ManualDateTest > a day that does not exist is refused instead of rolled forward FAILED
+APPLIED m06_search_report_always_offered (ReportsActivity.kt, eol='\r\n')
+m06_search_report_always_offered   RED(bitten)                SearchReportWiringTest > the report screen carries the query in the intent FAILED
+APPLIED m07_search_result_never_filtered (ReportType.kt, eol='\r\n')
+m07_search_result_never_filtered   RED(bitten)                ReportTypeTest > a list without the search report still lines up with the enum[26] FAILED
+APPLIED m08_uids_of_keeps_empty_array (BulkEditTransactionsDialogFragment.kt, eol='\n')
+m08_uids_of_keeps_empty_array      RED(bitten)                BulkEditResultTest > uidsOf treats an empty array as nothing[26] FAILED
+APPLIED m09_manual_button_unwired (DatePickerDialogFragment.kt, eol='\r\n')
+m09_manual_button_unwired          RED(bitten)                ManualDateWiringTest > the calendar grows a manual-entry button FAILED
+APPLIED m10_report_single_currency_bucket (SearchReportLoader.kt, eol='\n')
+m10_report_single_currency_bucket  RED(bitten)                SearchReportLoaderTest > totals stay per currency and are never added across them[26] FAILED
+APPLIED m11_report_folds_every_split (SearchReportLoader.kt, eol='\n')
+m11_report_folds_every_split       RED(bitten)                SearchReportLoaderTest > the amount is the debit magnitude rather than zero[26] FAILED
+APPLIED m12_select_ignores_argument (ExtendedViewsFragment.kt, eol='\n')
+m12_select_ignores_argument        RED(bitten)                ExtendedViewWiringTest > the management screen selects one view and writes the field set through the store FAILED
+APPLIED m13_range_order_not_checked (ManualDateRange.kt, eol='\n')
+m13_range_order_not_checked        RED(bitten)                ManualDateRangeTest > a reversed range is refused instead of silently drawing an empty report FAILED
+APPLIED m14_range_manual_button_unwired (DateRangePickerDialogFragment.kt, eol='\r\n')
+m14_range_manual_button_unwired    RED(bitten)                ManualDateWiringTest > the report range calendar offers the same entry FAILED
+==== restore verification ====
+VERIFY m01_bulk_delete_no_transaction: byte-identical
+VERIFY m02_select_null_keeps_mode_on: byte-identical
+VERIFY m03_update_fields_accepts_empty: byte-identical
+VERIFY m04_has_extra_lines_always_true: byte-identical
+VERIFY m05_manual_date_lenient: byte-identical
+VERIFY m06_search_report_always_offered: byte-identical
+VERIFY m07_search_result_never_filtered: byte-identical
+VERIFY m08_uids_of_keeps_empty_array: byte-identical
+VERIFY m09_manual_button_unwired: byte-identical
+VERIFY m10_report_single_currency_bucket: byte-identical
+VERIFY m11_report_folds_every_split: byte-identical
+VERIFY m12_select_ignores_argument: byte-identical
+VERIFY m13_range_order_not_checked: byte-identical
+VERIFY m14_range_manual_button_unwired: byte-identical

@@ -43,7 +43,22 @@
     <string name="key_export_accounts_csv" translatable="false">export_accounts_csv_key</string>
     <string name="key_delete_transaction_backup" translatable="false">delete_transaction_backup</string>
     <string name="key_import_book_backup" translatable="false">import_book_backup</string>
+    <string name="key_import_backup_file" translatable="false">import_backup_file</string>
+    <string name="key_webdav_server_url" translatable="false">webdav_server_url</string>
+    <string name="key_webdav_username" translatable="false">webdav_username</string>
+    <string name="key_webdav_password" translatable="false">webdav_password</string>
+    <string name="key_webdav_trust_all" translatable="false">webdav_trust_all_certificates</string>
+    <string name="key_webdav_allow_plaintext" translatable="false">webdav_allow_plaintext</string>
+    <string name="key_webdav_test_connection" translatable="false">webdav_test_connection</string>
+    <string name="key_webdav_backup_now" translatable="false">webdav_backup_now</string>
+    <string name="key_webdav_restore_now" translatable="false">webdav_restore_now</string>
+    <string name="key_webdav_two_way_sync" translatable="false">webdav_two_way_sync</string>
+    <string name="key_webdav_sync_now" translatable="false">webdav_sync_now</string>
+    <string name="key_sync_device_id" translatable="false">sync_device_id</string>
     <string name="key_absolute_date" translatable="false">absolute_date</string>
+    <string name="key_use_extended_view" translatable="false">use_extended_view</string>
+    <string name="key_extended_views" translatable="false">extended_views</string>
+    <string name="key_extended_view_default" translatable="false">extended_view_default</string>
     <!-- This is the filename for default backups. So use only simple characters and no spaces. Do not change the extension -->
     <string name="label_backup_filename" translatable="false">gnucash_pocket_backup.gnca</string>
     <string-array name="key_account_type_entries" translatable="false">

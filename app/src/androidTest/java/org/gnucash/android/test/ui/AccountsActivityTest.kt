@@ -108,36 +108,12 @@ class AccountsActivityTest : GnuAndroidTest() {
     }
 
     @Test
-    fun testSearchAccounts() {
-        val SEARCH_ACCOUNT_NAME = "Search Account"
-
-        val account = Account(SEARCH_ACCOUNT_NAME)
-        account.parentUID = SIMPLE_ACCOUNT_UID
-        accountsDbAdapter.insert(account)
-
-        // before search query
-        onView(withText(SIMPLE_ACCOUNT_NAME))
-            .check(matches(isDisplayed()))
-        onView(withText(SEARCH_ACCOUNT_NAME))
-            .check(doesNotExist())
-
-        //enter search query
+    fun testFullTextSearchEntry() {
+        // The top-right action is no longer an account-name filter. It is "全文"
+        // now and opens the full-text keyword search over transactions.
         clickViewId(R.id.menu_search)
-        onView(withId(androidx.appcompat.R.id.search_src_text))
-            .perform(typeText(SEARCH_ACCOUNT_NAME.substring(0, 2)))
-        sleep(100) //give search filter time to finish
-        onView(withText(SIMPLE_ACCOUNT_NAME))
-            .check(doesNotExist())
-        onView(withText(SEARCH_ACCOUNT_NAME))
+        onView(withId(R.id.input_query))
             .check(matches(isDisplayed()))
-
-        // same as before search query
-        onView(withId(androidx.appcompat.R.id.search_src_text)).perform(clearText())
-        sleep(100) //give search filter time to finish
-        onView(withText(SIMPLE_ACCOUNT_NAME))
-            .check(matches(isDisplayed()))
-        onView(withText(SEARCH_ACCOUNT_NAME))
-            .check(doesNotExist())
     }
 
     /**

@@ -1,0 +1,195 @@
+APPLIED m01_bulk_update_one_transaction_for_the_whole_batch (SearchBulkWriter.kt, eol='\n')
+m01_bulk_update_one_transaction_for_the_whole_batch      RED(bitten)                SearchBulkWiringTest > both bulk writes commit in bounded chunks instead of one long transaction FAILED
+APPLIED m02_bulk_delete_never_breathes (SearchBulkWriter.kt, eol='\n')
+m02_bulk_delete_never_breathes                           RED(bitten)                SearchBulkWiringTest > both bulk writes commit in bounded chunks instead of one long transaction FAILED
+APPLIED m03_summary_rows_built_on_the_main_thread (SearchResultsViewModel.kt, eol='\r\n')
+m03_summary_rows_built_on_the_main_thread                RED(bitten)                SearchBulkWiringTest > the per-row database lookups are not built on the main thread FAILED
+APPLIED m04_by_date_sorted_by_amount_instead_of_time (SearchReportChart.kt, eol='\n')
+m04_by_date_sorted_by_amount_instead_of_time             RED(bitten)                SearchReportChartTest > by date is oldest first, not biggest first FAILED
+APPLIED m05_by_date_ignores_the_zone (SearchReportChart.kt, eol='\n')
+m05_by_date_ignores_the_zone                             RED(bitten)                SearchReportChartTest > the same instant falls on two different days depending on the zone FAILED
+APPLIED m06_by_account_sorted_ascending (SearchReportChart.kt, eol='\n')
+m06_by_account_sorted_ascending                          RED(bitten)                SearchReportChartTest > by account is a partition, so the slices add up to the total FAILED
+APPLIED m07_by_account_loses_the_count (SearchReportChart.kt, eol='\n')
+m07_by_account_loses_the_count                           RED(bitten)                SearchReportChartTest > by account is a partition, so the slices add up to the total FAILED
+APPLIED m08_chart_folds_every_currency_together (SearchReportLoader.kt, eol='\n')
+m08_chart_folds_every_currency_together                  COMPILE-ERROR(inconclusive) 
+APPLIED m09_chart_picks_the_smallest_currency (SearchReportLoader.kt, eol='\n')
+m09_chart_picks_the_smallest_currency                    COMPILE-ERROR(inconclusive) SearchReportLoaderTest > the chart draws one currency and leaves the others to the table[26] FAILED
+APPLIED m10_has_chart_always_true (SearchReport.kt, eol='\n')
+m10_has_chart_always_true                                RED(bitten)                SearchReportLoaderTest > a report with nothing in it has no chart[26] FAILED
+APPLIED m11_default_chart_type_is_pie (SearchResultReportFragment.kt, eol='\n')
+m11_default_chart_type_is_pie                            COMPILE-ERROR(inconclusive) 
+APPLIED m12_chart_array_order_swapped (strings.xml, eol='\r\n')
+m12_chart_array_order_swapped                            GREEN(NOT-bitten)          
+APPLIED m13_line_chart_draws_accounts (SearchResultReportFragment.kt, eol='\n')
+m13_line_chart_draws_accounts                            GREEN(NOT-bitten)          
+APPLIED m15_chart_menu_entry_came_back (search_results_menu.xml, eol='\n')
+m15_chart_menu_entry_came_back                           GREEN(NOT-bitten)          
+APPLIED m16_batch_size_unbounded (SearchBulkWriter.kt, eol='\n')
+m16_batch_size_unbounded                                 RED(bitten)                SearchBulkWiringTest > both bulk writes commit in bounded chunks instead of one long transaction FAILED
+APPLIED m17_chunk_drops_the_tail (SearchBulkWriter.kt, eol='\n')
+m17_chunk_drops_the_tail                                 UNKNOWN(rc=1)              
+APPLIED m14_chart_dialog_file_came_back (created SearchChartDialogFragment.kt)
+m14_chart_dialog_file_came_back                          GREEN(NOT-bitten)          
+==== restore verification ====
+VERIFY m01_bulk_update_one_transaction_for_the_whole_batch: byte-identical
+VERIFY m02_bulk_delete_never_breathes: byte-identical
+VERIFY m03_summary_rows_built_on_the_main_thread: byte-identical
+VERIFY m04_by_date_sorted_by_amount_instead_of_time: byte-identical
+VERIFY m05_by_date_ignores_the_zone: byte-identical
+VERIFY m06_by_account_sorted_ascending: byte-identical
+VERIFY m07_by_account_loses_the_count: byte-identical
+VERIFY m08_chart_folds_every_currency_together: byte-identical
+VERIFY m09_chart_picks_the_smallest_currency: byte-identical
+VERIFY m10_has_chart_always_true: byte-identical
+VERIFY m11_default_chart_type_is_pie: byte-identical
+VERIFY m12_chart_array_order_swapped: byte-identical
+VERIFY m13_line_chart_draws_accounts: byte-identical
+VERIFY m15_chart_menu_entry_came_back: byte-identical
+VERIFY m16_batch_size_unbounded: byte-identical
+VERIFY m17_chunk_drops_the_tail: byte-identical
+VERIFY m14_chart_dialog_file_came_back: absent (as required)
+APPLIED m11_default_chart_type_is_pie (SearchResultReportFragment.kt, eol='\n')
+m11_default_chart_type_is_pie                            RED(bitten)                SearchReportWiringTest > the chart types are built and the table stays the default FAILED
+APPLIED m12_chart_array_order_swapped (strings.xml, eol='\r\n')
+m12_chart_array_order_swapped                            RED(bitten)                SearchReportWiringTest > the report screen offers a chart type and the array matches the constants FAILED
+==== restore verification ====
+VERIFY m01_bulk_update_one_transaction_for_the_whole_batch: byte-identical
+VERIFY m02_bulk_delete_never_breathes: byte-identical
+VERIFY m03_summary_rows_built_on_the_main_thread: byte-identical
+VERIFY m04_by_date_sorted_by_amount_instead_of_time: byte-identical
+VERIFY m05_by_date_ignores_the_zone: byte-identical
+VERIFY m06_by_account_sorted_ascending: byte-identical
+VERIFY m07_by_account_loses_the_count: byte-identical
+VERIFY m08_chart_folds_every_currency_together: byte-identical
+VERIFY m09_chart_picks_the_smallest_currency: byte-identical
+VERIFY m10_has_chart_always_true: byte-identical
+VERIFY m11_default_chart_type_is_pie: byte-identical
+APPLIED m11_default_chart_type_is_pie (SearchResultReportFragment.kt, eol='\n')
+m11_default_chart_type_is_pie                            RED(bitten)                SearchReportWiringTest > the chart types are built and the table stays the default FAILED
+APPLIED m12_chart_array_order_swapped (strings.xml, eol='\r\n')
+m12_chart_array_order_swapped                            RED(bitten)                SearchReportWiringTest > the report screen offers a chart type and the array matches the constants FAILED
+==== restore verification ====
+VERIFY m01_bulk_update_one_transaction_for_the_whole_batch: byte-identical
+VERIFY m02_bulk_delete_never_breathes: byte-identical
+VERIFY m03_summary_rows_built_on_the_main_thread: byte-identical
+VERIFY m04_by_date_sorted_by_amount_instead_of_time: byte-identical
+VERIFY m05_by_date_ignores_the_zone: byte-identical
+VERIFY m06_by_account_sorted_ascending: byte-identical
+VERIFY m07_by_account_loses_the_count: byte-identical
+VERIFY m08_chart_folds_every_currency_together: byte-identical
+VERIFY m09_chart_picks_the_smallest_currency: byte-identical
+VERIFY m10_has_chart_always_true: byte-identical
+VERIFY m11_default_chart_type_is_pie: byte-identical
+VERIFY m12_chart_array_order_swapped: byte-identical
+VERIFY m13_line_chart_draws_accounts: byte-identical
+VERIFY m15_chart_menu_entry_came_back: byte-identical
+VERIFY m16_batch_size_unbounded: byte-identical
+VERIFY m17_chunk_drops_the_tail: byte-identical
+VERIFY m14_chart_dialog_file_came_back: absent (as required)
+APPLIED m13_line_chart_draws_accounts (SearchResultReportFragment.kt, eol='\n')
+m13_line_chart_draws_accounts                            RED(bitten)                SearchReportWiringTest > the chart types are built and the table stays the default FAILED
+APPLIED m15_chart_menu_entry_came_back (search_results_menu.xml, eol='\n')
+m15_chart_menu_entry_came_back                           RED(bitten)                SearchReportWiringTest > the search screen no longer has a chart dialog FAILED
+APPLIED m14_chart_dialog_file_came_back (created SearchChartDialogFragment.kt)
+APPLIED m14_chart_dialog_file_came_back (created SearchChartDialogFragment.kt)
+m14_chart_dialog_file_came_back                          RED(bitten)                SearchReportWiringTest > the search screen no longer has a chart dialog FAILED
+==== restore verification ====
+VERIFY m01_bulk_update_one_transaction_for_the_whole_batch: byte-identical
+VERIFY m02_bulk_delete_never_breathes: byte-identical
+VERIFY m03_summary_rows_built_on_the_main_thread: byte-identical
+VERIFY m04_by_date_sorted_by_amount_instead_of_time: byte-identical
+VERIFY m05_by_date_ignores_the_zone: byte-identical
+VERIFY m06_by_account_sorted_ascending: byte-identical
+VERIFY m07_by_account_loses_the_count: byte-identical
+VERIFY m08_chart_folds_every_currency_together: byte-identical
+VERIFY m09_chart_picks_the_smallest_currency: byte-identical
+VERIFY m10_has_chart_always_true: byte-identical
+VERIFY m11_default_chart_type_is_pie: byte-identical
+VERIFY m12_chart_array_order_swapped: byte-identical
+VERIFY m13_line_chart_draws_accounts: byte-identical
+VERIFY m15_chart_menu_entry_came_back: byte-identical
+VERIFY m16_batch_size_unbounded: byte-identical
+VERIFY m17_chunk_drops_the_tail: byte-identical
+VERIFY m14_chart_dialog_file_came_back: absent (as required)
+APPLIED m08_chart_folds_every_currency_together (SearchReportLoader.kt, eol='\n')
+m08_chart_folds_every_currency_together                  RED(bitten)                SearchReportLoaderTest > totals stay per currency and are never added across them[26] FAILED
+==== restore verification ====
+VERIFY m01_bulk_update_one_transaction_for_the_whole_batch: byte-identical
+VERIFY m02_bulk_delete_never_breathes: byte-identical
+VERIFY m03_summary_rows_built_on_the_main_thread: byte-identical
+VERIFY m04_by_date_sorted_by_amount_instead_of_time: byte-identical
+VERIFY m05_by_date_ignores_the_zone: byte-identical
+VERIFY m06_by_account_sorted_ascending: byte-identical
+VERIFY m07_by_account_loses_the_count: byte-identical
+VERIFY m08_chart_folds_every_currency_together: byte-identical
+VERIFY m09_chart_picks_the_smallest_currency: byte-identical
+VERIFY m10_has_chart_always_true: byte-identical
+VERIFY m11_default_chart_type_is_pie: byte-identical
+VERIFY m12_chart_array_order_swapped: byte-identical
+VERIFY m13_line_chart_draws_accounts: byte-identical
+VERIFY m15_chart_menu_entry_came_back: byte-identical
+VERIFY m16_batch_size_unbounded: byte-identical
+VERIFY m17_chunk_drops_the_tail: byte-identical
+VERIFY m14_chart_dialog_file_came_back: absent (as required)
+APPLIED m09_chart_picks_the_smallest_currency (SearchReportLoader.kt, eol='\n')
+m09_chart_picks_the_smallest_currency                    SANDBOX-BLOCKED(inconclusive) 
+==== restore verification ====
+VERIFY m01_bulk_update_one_transaction_for_the_whole_batch: byte-identical
+VERIFY m02_bulk_delete_never_breathes: byte-identical
+VERIFY m03_summary_rows_built_on_the_main_thread: byte-identical
+VERIFY m04_by_date_sorted_by_amount_instead_of_time: byte-identical
+VERIFY m05_by_date_ignores_the_zone: byte-identical
+VERIFY m06_by_account_sorted_ascending: byte-identical
+VERIFY m07_by_account_loses_the_count: byte-identical
+VERIFY m08_chart_folds_every_currency_together: byte-identical
+VERIFY m09_chart_picks_the_smallest_currency: byte-identical
+VERIFY m10_has_chart_always_true: byte-identical
+VERIFY m11_default_chart_type_is_pie: byte-identical
+VERIFY m12_chart_array_order_swapped: byte-identical
+VERIFY m13_line_chart_draws_accounts: byte-identical
+VERIFY m15_chart_menu_entry_came_back: byte-identical
+VERIFY m16_batch_size_unbounded: byte-identical
+VERIFY m17_chunk_drops_the_tail: byte-identical
+VERIFY m14_chart_dialog_file_came_back: absent (as required)
+APPLIED m09_chart_picks_the_smallest_currency (SearchReportLoader.kt, eol='\n')
+m09_chart_picks_the_smallest_currency                    RED(bitten)                SearchReportLoaderTest > the chart draws one currency and leaves the others to the table[26] FAILED
+==== restore verification ====
+VERIFY m01_bulk_update_one_transaction_for_the_whole_batch: byte-identical
+VERIFY m02_bulk_delete_never_breathes: byte-identical
+VERIFY m03_summary_rows_built_on_the_main_thread: byte-identical
+VERIFY m04_by_date_sorted_by_amount_instead_of_time: byte-identical
+VERIFY m05_by_date_ignores_the_zone: byte-identical
+VERIFY m06_by_account_sorted_ascending: byte-identical
+VERIFY m07_by_account_loses_the_count: byte-identical
+VERIFY m08_chart_folds_every_currency_together: byte-identical
+VERIFY m09_chart_picks_the_smallest_currency: byte-identical
+VERIFY m10_has_chart_always_true: byte-identical
+VERIFY m11_default_chart_type_is_pie: byte-identical
+VERIFY m12_chart_array_order_swapped: byte-identical
+VERIFY m13_line_chart_draws_accounts: byte-identical
+VERIFY m15_chart_menu_entry_came_back: byte-identical
+VERIFY m16_batch_size_unbounded: byte-identical
+VERIFY m17_chunk_drops_the_tail: byte-identical
+VERIFY m14_chart_dialog_file_came_back: absent (as required)
+APPLIED m17_chunk_drops_the_tail (SearchBulkWriter.kt, eol='\n')
+m17_chunk_drops_the_tail                                 RED(bitten)                SearchBulkWriterTest > delete removes every listed transaction and leaves the rest[26] FAILED
+==== restore verification ====
+VERIFY m01_bulk_update_one_transaction_for_the_whole_batch: byte-identical
+VERIFY m02_bulk_delete_never_breathes: byte-identical
+VERIFY m03_summary_rows_built_on_the_main_thread: byte-identical
+VERIFY m04_by_date_sorted_by_amount_instead_of_time: byte-identical
+VERIFY m05_by_date_ignores_the_zone: byte-identical
+VERIFY m06_by_account_sorted_ascending: byte-identical
+VERIFY m07_by_account_loses_the_count: byte-identical
+VERIFY m08_chart_folds_every_currency_together: byte-identical
+VERIFY m09_chart_picks_the_smallest_currency: byte-identical
+VERIFY m10_has_chart_always_true: byte-identical
+VERIFY m11_default_chart_type_is_pie: byte-identical
+VERIFY m12_chart_array_order_swapped: byte-identical
+VERIFY m13_line_chart_draws_accounts: byte-identical
+VERIFY m15_chart_menu_entry_came_back: byte-identical
+VERIFY m16_batch_size_unbounded: byte-identical
+VERIFY m17_chunk_drops_the_tail: byte-identical
+VERIFY m14_chart_dialog_file_came_back: absent (as required)

@@ -23,12 +23,25 @@ import android.database.sqlite.SQLiteException
 import androidx.annotation.VisibleForTesting
 import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseHelper.Companion.PRICES_TABLE_CREATE
+import org.gnucash.android.db.DatabaseHelper.Companion.SEARCH_TEMPLATES_TABLE_CREATE
+import org.gnucash.android.db.DatabaseHelper.Companion.SYNC_INDEX_STATEMENTS
+import org.gnucash.android.db.DatabaseHelper.Companion.SYNC_RESOLUTIONS_TABLE_CREATE
+import org.gnucash.android.db.DatabaseHelper.Companion.SYNC_RESOLUTION_INDEX_STATEMENTS
+import org.gnucash.android.db.DatabaseHelper.Companion.SYNC_STATE_TABLE_CREATE
+import org.gnucash.android.db.DatabaseHelper.Companion.TAGS_TABLE_CREATE
+import org.gnucash.android.db.DatabaseHelper.Companion.TAG_INDEX_STATEMENTS
+import org.gnucash.android.db.DatabaseHelper.Companion.TOMBSTONES_TABLE_CREATE
+import org.gnucash.android.db.DatabaseHelper.Companion.TRANSACTION_TAGS_TABLE_CREATE
+import org.gnucash.android.db.DatabaseHelper.Companion.TRANSACTION_TEMPLATES_TABLE_CREATE
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.DatabaseSchema.CommodityEntry
 import org.gnucash.android.db.DatabaseSchema.PriceEntry
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
+import org.gnucash.android.db.DatabaseSchema.SyncStateEntry
+import org.gnucash.android.db.DatabaseSchema.TagEntry
+import org.gnucash.android.db.DatabaseSchema.TombstoneEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.importer.xml.CommoditiesXmlHandler
 import org.gnucash.android.model.Commodity
@@ -102,6 +115,24 @@ object MigrationHelper {
         }
         if (oldVersion < 30) {
             migrateTo30(db)
+        }
+        if (oldVersion < 31) {
+            migrateTo31(db)
+        }
+        if (oldVersion < 32) {
+            migrateTo32(db)
+        }
+        if (oldVersion < 33) {
+            migrateTo33(db)
+        }
+        if (oldVersion < 34) {
+            migrateTo34(db)
+        }
+        if (oldVersion < 35) {
+            migrateTo35(db)
+        }
+        if (oldVersion < 36) {
+            migrateTo36(db)
         }
     }
 
@@ -371,6 +402,159 @@ object MigrationHelper {
         } finally {
             db.endTransaction()
         }
+    }
+
+    /**
+     * Upgrade the database to version 31.
+     *
+     * Pure addition (feature ①a): the local saved-search-templates table. No
+     * existing table is touched, so this is safe to run on any older database.
+     * The statement is `IF NOT EXISTS`, so re-running is a no-op.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo31(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 31")
+        db.execSQL(SEARCH_TEMPLATES_TABLE_CREATE)
+    }
+
+    /**
+     * Upgrade the database to version 32.
+     *
+     * Pure addition (feature ⑧): the `tags` registry and the transaction↔tag join
+     * table. No existing table is touched. Table/index statements are
+     * `IF NOT EXISTS` and the trigger is dropped first, so re-running this
+     * migration is a no-op instead of an error.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo32(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 32")
+        db.execSQL(TAGS_TABLE_CREATE)
+        db.execSQL(TRANSACTION_TAGS_TABLE_CREATE)
+        for (statement in TAG_INDEX_STATEMENTS) {
+            db.execSQL(statement)
+        }
+        val trigger = "update_time_trigger_" + TagEntry.TABLE_NAME
+        db.execSQL("DROP TRIGGER IF EXISTS $trigger")
+        db.execSQL(DatabaseHelper.createUpdatedAtTrigger(TagEntry.TABLE_NAME))
+    }
+
+    /**
+     * Upgrade the database to version 33.
+     *
+     * Pure addition (feature ② v2): the sync base-snapshot table and the deletion
+     * marker table. No existing table is touched. Table/index statements are
+     * `IF NOT EXISTS` and the triggers are dropped first, so re-running this
+     * migration is a no-op instead of an error.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo33(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 33")
+        db.execSQL(SYNC_STATE_TABLE_CREATE)
+        db.execSQL(TOMBSTONES_TABLE_CREATE)
+        for (statement in SYNC_INDEX_STATEMENTS) {
+            db.execSQL(statement)
+        }
+        for (table in arrayOf(SyncStateEntry.TABLE_NAME, TombstoneEntry.TABLE_NAME)) {
+            val trigger = "update_time_trigger_$table"
+            db.execSQL("DROP TRIGGER IF EXISTS $trigger")
+            db.execSQL(DatabaseHelper.createUpdatedAtTrigger(table))
+        }
+    }
+
+    /**
+     * Upgrade the database to version 34.
+     *
+     * Additive (feature ② v2 round orchestration): `sync_state` gains
+     * `base_etag` (the peer's entity tag as of the last successful sync — needed
+     * both to skip re-downloading an unchanged record and to build an `If-Match`
+     * precondition) and `pending_since` (the first-seen-absent marker that makes a
+     * deletion wait for a second confirmation).
+     *
+     * `ALTER TABLE ... ADD COLUMN` has no `IF NOT EXISTS` in SQLite, so the columns
+     * are added only when [columnExists] says they are missing — that keeps the
+     * migration idempotent, which is how the rest of this class behaves and what the
+     * migration test asserts by running it twice. The shared `CREATE TABLE IF NOT
+     * EXISTS` is run first so the table is guaranteed to exist: for a database that
+     * skipped 33 entirely it is created already carrying both columns (the statement
+     * is the current shape), and for an existing 33 table it is a no-op and the two
+     * `ALTER`s below do the work.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo34(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 34")
+        db.execSQL(SYNC_STATE_TABLE_CREATE)
+        addColumnIfMissing(
+            db, SyncStateEntry.TABLE_NAME,
+            SyncStateEntry.COLUMN_BASE_ETAG, "varchar(255)"
+        )
+        addColumnIfMissing(
+            db, SyncStateEntry.TABLE_NAME,
+            SyncStateEntry.COLUMN_PENDING_SINCE, "integer"
+        )
+    }
+
+    /**
+     * Upgrade the database to version 35.
+     *
+     * Adds the local-only `transaction_templates` table (feature ①d: saved
+     * transaction templates). `IF NOT EXISTS` makes a re-run a no-op, so this is
+     * also harmless on a database that already has the table.
+     */
+    private fun migrateTo35(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 35")
+        db.execSQL(TRANSACTION_TEMPLATES_TABLE_CREATE)
+    }
+
+    /**
+     * Upgrade the database to version 36.
+     *
+     * Pure addition (feature ② v3): the stored conflict-resolution overrides — the side the
+     * user picked in the conflict centre, read by the next round's planner. No existing table
+     * is touched, and both the table and its index are `IF NOT EXISTS`, so re-running this
+     * migration is a no-op rather than an error (which is what the migration test asserts by
+     * running it twice).
+     *
+     * No trigger: the table carries no `modified_at` to keep true (see
+     * [org.gnucash.android.db.DatabaseSchema.SyncResolutionEntry]).
+     *
+     * @param db the database.
+     */
+    private fun migrateTo36(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 36")
+        db.execSQL(SYNC_RESOLUTIONS_TABLE_CREATE)
+        for (statement in SYNC_RESOLUTION_INDEX_STATEMENTS) {
+            db.execSQL(statement)
+        }
+    }
+
+    /** Adds [column] to [table] only when it is not already there (idempotent ALTER). */
+    private fun addColumnIfMissing(
+        db: SQLiteDatabase,
+        table: String,
+        column: String,
+        type: String
+    ) {
+        if (columnExists(db, table, column)) return
+        db.execSQL("ALTER TABLE $table ADD COLUMN $column $type")
+    }
+
+    /** `true` when [table] has a column called [column] (or when the table is absent). */
+    private fun columnExists(db: SQLiteDatabase, table: String, column: String): Boolean {
+        var found = false
+        db.rawQuery("PRAGMA table_info($table)", null).use { cursor ->
+            val nameIndex = cursor.getColumnIndex("name")
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == column) {
+                    found = true
+                    break
+                }
+            }
+        }
+        return found
     }
 
     private class AccountCurrency(

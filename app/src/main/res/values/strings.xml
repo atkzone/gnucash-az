@@ -400,6 +400,13 @@
     <string name="summary_select_backup_file">Select a file for automatic backups</string>
     <string name="title_confirm_restore_backup">Confirm restore from backup</string>
     <string name="msg_confirm_restore_backup_into_new_book">A new book will be opened with the contents of this backup. Do you wish to proceed?</string>
+    <string name="title_import_backup_file">Import Backup…</string>
+    <string name="summary_import_backup_file">Select a backup file from the file browser</string>
+    <string name="title_confirm_import_backup">Confirm import of backup</string>
+    <string name="msg_confirm_import_backup_into_new_book">A new book will be opened with the contents of the selected backup file. Do you wish to proceed?</string>
+    <string name="title_import_backup_unsupported_format">Unsupported file</string>
+    <string name="msg_import_backup_unsupported_format">The selected file is not a book backup. Supported formats: %1$s</string>
+    <string name="btn_import">Import</string>
     <string name="btn_restore">Restore</string>
     <string name="title_no_backups_found">No backups found</string>
     <string name="msg_no_backups_to_restore_from">There are no existing backup files to restore from</string>
@@ -443,6 +450,10 @@
     <string name="search_field_amount">Amount</string>
     <string name="search_field_value">Value</string>
     <string name="search_field_account">Account</string>
+    <string name="search_field_any_field">Any field</string>
+    <string name="search_field_tag">Tag</string>
+    <string name="search_filter_tag">Filter by tag %s</string>
+    <string name="search_filtered_by_tag">Filtered by tag %s</string>
     <string name="search_compare_contains">contains</string>
     <string name="search_compare_equals">equals</string>
     <string name="search_compare_date_lt">"is before"</string>
@@ -500,4 +511,296 @@
     <string name="export_only_modified">Export only modified transactions</string>
     <string name="price_list_empty">No prices to display</string>
     <string name="title_tab_labels">Show tabs with labels</string>
+
+    <!-- Feature ①a: multi-keyword search + saved searches (「常用搜索」).
+         文案刻意使用中文：搜索相关的词一律用中文表示。 -->
+    <string name="search_criteria_none">"所有条件都不满足"</string>
+    <string name="search_templates_save">保存为常用搜索</string>
+    <string name="search_templates_load">常用搜索</string>
+    <string name="search_templates_manage">管理</string>
+    <string name="search_templates_rename">改名</string>
+    <string name="search_templates_delete">删除</string>
+    <string name="search_templates_delete_confirm">确定删除选中的常用搜索？此操作不可撤销。</string>
+    <string name="search_templates_deleted">已删除</string>
+    <string name="search_templates_saved">已保存为常用搜索</string>
+    <string name="search_templates_save_failed">保存失败</string>
+    <string name="search_templates_delete_failed">删除失败</string>
+    <string name="search_templates_name_hint">名称</string>
+    <string name="search_templates_name_required">请输入名称</string>
+    <string name="search_templates_empty">还没有常用搜索</string>
+    <string name="search_templates_invalid">该常用搜索为空或无法读取</string>
+    <string name="search_templates_delete_selected">删除所选</string>
+    <string name="search_templates_none_selected">请先勾选要删除的常用搜索</string>
+    <string name="search_templates_one_selected">改名请只勾选一项</string>
+
+    <!-- 全文搜索（首页右上角入口）。
+         文案刻意使用中文：搜索相关的词一律用中文表示。 -->
+    <string name="menu_full_text_search">全文</string>
+    <string name="title_full_text_search">全文搜索</string>
+    <string name="full_text_search_label">全文搜索：模糊匹配交易的所有字段值（摘要、备注、编号、分录备注、账户名、标签）。</string>
+    <string name="full_text_search_hint">例如：打车 现金 | 地铁</string>
+    <string name="full_text_search_syntax">多个关键词用空格分隔表示“且”；用 | 表示“或”；用 not 表示“否定”；用双引号可锁定一个词组。</string>
+    <string name="full_text_search_empty">请输入要搜索的关键词</string>
+
+    <!-- 左侧导航栏入口：改名为“高级搜索”。 -->
+    <string name="nav_menu_advanced_search">高级搜索</string>
+
+    <!-- Feature ①d: saved transaction templates -->
+    <string name="title_transaction_templates">Transaction templates</string>
+    <string name="label_no_transaction_templates">No transaction templates yet</string>
+    <string name="menu_create_transaction_template">New transaction template</string>
+    <string name="menu_transaction_template_actions">Template actions</string>
+    <string name="menu_use_transaction_template">Create transaction</string>
+    <string name="title_new_transaction_template">New template</string>
+    <string name="title_edit_transaction_template">Edit template</string>
+    <string name="hint_transaction_template_name">Template name</string>
+    <string name="hint_transaction_template_amount">Amount (leave blank for no amount)</string>
+    <string name="help_transaction_template_amount">Leave the amount blank to enter it each time this template is used.</string>
+    <string name="label_debit_account">Debit account</string>
+    <string name="label_credit_account">Credit account</string>
+    <string name="label_transaction_template_no_amount">No amount</string>
+    <string name="toast_transaction_template_name_required">Enter a template name</string>
+    <string name="toast_transaction_template_accounts_required">Pick two different debit and credit accounts</string>
+    <string name="toast_transaction_template_saved">Template saved</string>
+    <string name="toast_transaction_template_save_failed">Could not save the template</string>
+    <string name="toast_transaction_template_deleted">Template deleted</string>
+    <string name="toast_transaction_template_delete_failed">Could not delete the template</string>
+    <string name="toast_transaction_template_unreadable">This template cannot be read; edit or delete it</string>
+    <string name="confirm_delete_transaction_template">Delete \u201c%s\u201d?</string>
+    <string name="transaction_template_accounts_summary">%1$s → %2$s</string>
+    <string name="label_transaction_template_no_account">No account</string>
+    <string name="toast_transaction_template_amount_invalid">Enter a valid amount, or leave it blank for no amount</string>
+
+    <!-- Search results: sorting, totals and charts -->
+    <string name="search_sort">Sort</string>
+    <string name="search_sort_date_desc">Date (newest first)</string>
+    <string name="search_sort_date_asc">Date (oldest first)</string>
+    <string name="search_sort_amount_desc">Amount (largest first)</string>
+    <string name="search_sort_amount_asc">Amount (smallest first)</string>
+    <string name="search_sort_applied">Sorted by %1$s</string>
+    <string name="search_summary_title">Totals &amp; statistics</string>
+    <string name="search_summary_count">%1$d transactions</string>
+    <string name="search_summary_total_header">Total</string>
+    <string name="search_summary_by_account">By account</string>
+    <string name="search_summary_by_tag">By tag (buckets may overlap)</string>
+    <string name="search_summary_no_category">(none)</string>
+    <string name="search_summary_empty">There are no results to summarize</string>
+    <!-- Account picker (filter box on the debit/credit rows) -->
+    <string name="title_select_account">Select account</string>
+    <string name="title_search_debit_account">Search debit account</string>
+    <string name="title_search_credit_account">Search credit account</string>
+    <string name="hint_search_account">Type to filter accounts</string>
+    <string name="label_no_matching_accounts">No matching accounts</string>
+
+    <!-- Bulk actions on search results -->
+    <string name="menu_search_select">Batch select</string>
+    <string name="bulk_selection_title">%1$d selected</string>
+    <string name="bulk_select_all">Select all</string>
+    <string name="bulk_select_item">Select this transaction</string>
+    <string name="bulk_edit">Bulk edit</string>
+    <string name="bulk_delete">Bulk delete</string>
+    <string name="bulk_edit_title">Edit %1$d transactions</string>
+    <string name="bulk_delete_confirm">Delete the %1$d selected transactions? This cannot be undone.</string>
+    <string name="bulk_edit_field">Field to change</string>
+    <string name="bulk_edit_value">New value</string>
+    <string name="bulk_edit_text_hint">Leave blank to clear the field</string>
+    <string name="bulk_edit_date_hint">Date as YYYY-MM-DD</string>
+    <string name="bulk_edit_tag_hint">Tag name (without #)</string>
+    <string name="bulk_edit_tag_remove">Remove this tag instead of adding it</string>
+    <string name="bulk_edit_nothing_selected">Select at least one transaction first</string>
+    <string name="bulk_edit_done">Updated %1$d transactions</string>
+    <string name="bulk_edit_nothing_updated">Nothing was updated — check the new value</string>
+    <string name="bulk_delete_done">Deleted %1$d transactions</string>
+    <string name="bulk_field_description">Description</string>
+    <string name="bulk_field_notes">Notes</string>
+    <string name="bulk_field_number">Number</string>
+    <string name="bulk_field_date">Transaction date</string>
+    <string name="bulk_field_tag">Tag</string>
+
+    <!-- WebDAV 云备份（②-v1）。措辞一律中文：这是用户唯一能看见该功能的地方。 -->
+    <string name="title_webdav_category">WebDAV 云备份</string>
+    <string name="title_webdav_server_url">服务器地址</string>
+    <string name="summary_webdav_server_url">填到备份要放的文件夹为止，例如 https://cloud.example.com/remote.php/dav/files/me/gnucash</string>
+    <string name="title_webdav_username">用户名</string>
+    <string name="summary_webdav_username">留空表示匿名访问</string>
+    <string name="title_webdav_password">密码</string>
+    <string name="summary_webdav_password_unset">未设置</string>
+    <string name="summary_webdav_password_set">已设置</string>
+    <string name="title_webdav_trust_all">信任自签名证书</string>
+    <string name="summary_webdav_trust_all">仅在服务器用自签名证书时才打开；打开后无法察觉中间人</string>
+    <string name="title_webdav_allow_plaintext">允许明文 HTTP</string>
+    <string name="summary_webdav_allow_plaintext">http:// 会把密码明文发出去，非必要不要打开</string>
+    <string name="title_webdav_test_connection">测试连接</string>
+    <string name="summary_webdav_test_connection">向上面这个地址发一次目录列举，确认地址与账号可用</string>
+    <string name="title_webdav_backup_now">上传备份到云端</string>
+    <string name="summary_webdav_backup_now">把当前账本整体上传，覆盖云端那一份</string>
+    <string name="title_webdav_restore_now">从云端恢复</string>
+    <string name="summary_webdav_restore_now">把云端那一份下载下来，并作为新账本导入</string>
+
+    <!-- 连接校验：每个问题都说清「改哪一栏」 -->
+    <string name="webdav_problem_blank">服务器地址是空的</string>
+    <string name="webdav_problem_missing_scheme">地址前面要加 https:// 或 http://</string>
+    <string name="webdav_problem_unsupported_scheme">只支持 http:// 与 https:// 两种前缀</string>
+    <string name="webdav_problem_missing_host">地址里没有主机名</string>
+    <string name="webdav_problem_credentials_in_url">地址里不要写用户名或密码，请填到下面两栏</string>
+    <string name="webdav_problem_query_or_fragment">地址里不能带 ? 或 # 后面的内容</string>
+    <string name="webdav_problem_unescaped_character">地址里有空格或控制字符，请用 %20 代替空格</string>
+    <string name="webdav_problem_encoded_separator">路径里出现了编码过的斜杠 %2F，它不是文件夹名</string>
+    <string name="webdav_problem_relative_segment">路径里有 . 或 ..，那会把备份根目录挪走</string>
+    <string name="webdav_problem_plaintext">http:// 会明文发送地址与密码；请改用 https://，或明确打开「允许明文 HTTP」</string>
+    <string name="webdav_problem_password_without_user">填了密码却没填用户名，这样不会发送任何凭据</string>
+
+    <!-- 连接测试结果 -->
+    <string name="webdav_connection_ready">连接可用：服务器已返回目录列举</string>
+    <string name="webdav_connection_unreachable">连不上服务器：地址、网络或证书有问题</string>
+    <string name="webdav_connection_not_a_webdav_root">这个地址不像 WebDAV 目录（服务器没返回 207），请检查路径</string>
+    <string name="webdav_connection_bad_response">服务器返回的内容无法解析为目录列举</string>
+    <string name="webdav_connection_too_deep">目录层级过深，地址多半指错了位置</string>
+
+    <!-- 口令对话框 -->
+    <string name="title_backup_passphrase">加密口令</string>
+    <string name="hint_backup_passphrase">口令（留空表示不加密）</string>
+    <string name="hint_backup_passphrase_confirm">再输一次口令</string>
+    <string name="label_backup_passphrase_irreversible">我明白：口令遗失后云端那份备份将无法恢复</string>
+    <string name="msg_backup_passphrase_irreversible">加密后，桌面版 GnuCash 将无法直接打开云端那份文件；口令只保存在你脑子里，我们无法帮你找回。</string>
+    <string name="webdav_passphrase_problem_confirmation_without_passphrase">只填了「再输一次」这一栏，请把口令填进上一栏</string>
+    <string name="webdav_passphrase_problem_mismatch">两次输入的口令不一致</string>
+    <string name="webdav_passphrase_problem_acknowledgement_missing">请先勾选下面的确认项</string>
+
+    <!-- 备份 / 恢复结果 -->
+    <string name="webdav_upload_stored_plain">备份已上传（未加密，桌面版 GnuCash 可直接打开）</string>
+    <string name="webdav_upload_stored_encrypted">备份已上传（已加密，桌面版 GnuCash 打不开）</string>
+    <string name="webdav_upload_refused">服务器拒绝了这次上传</string>
+    <string name="webdav_upload_unreachable">上传失败：没有连上服务器</string>
+    <string name="webdav_restore_got_plain">已取回云端备份</string>
+    <string name="webdav_restore_got_encrypted">已取回云端备份（已解密）</string>
+    <string name="webdav_restore_needs_passphrase">这份备份是加密的，请输入口令后重试</string>
+    <string name="webdav_restore_wrong_passphrase">口令不对，无法打开这份备份</string>
+    <string name="webdav_restore_nothing_there">云端还没有这个账本的备份</string>
+    <string name="webdav_restore_unreadable">云端文件打不开：它可能已损坏，或由更新的版本写出</string>
+    <string name="webdav_restore_not_a_book">取回的不是账本文件，请检查地址是否指向了登录页或其他目录</string>
+    <string name="webdav_restore_refused">服务器拒绝了这次读取</string>
+    <string name="webdav_restore_unreachable">恢复失败：没有连上服务器</string>
+    <string name="title_confirm_restore_remote">从云端恢复</string>
+    <string name="msg_confirm_restore_remote">云端的备份将作为一个新账本导入，当前账本不受影响。继续吗？</string>
+    <string name="webdav_export_failed">无法读取当前账本，已取消上传（避免把云端那份覆盖成空文件）</string>
+    <string name="webdav_upload_started">正在上传备份…</string>
+
+    <!-- ②-v2 双向同步（一次一轮） -->
+    <string name="title_webdav_two_way_sync">双向同步</string>
+    <string name="summary_webdav_two_way_sync">关闭时只做上面的单向备份／恢复；打开后可让另一台设备共用同一个目录，双向合并改动</string>
+    <string name="msg_confirm_two_way_sync">两台设备指向同一个目录后，同步会合并双方的改动，并在连续确认缺席后删除对端记录。请先确认地址指向的是本账本专用目录。要打开吗？</string>
+    <string name="title_webdav_sync_now">立即同步</string>
+    <string name="summary_webdav_sync_now">与云端目录合并一次（需先打开上方「双向同步」）</string>
+    <string name="webdav_sync_disabled">请先打开上方「双向同步」</string>
+    <string name="webdav_sync_started">正在同步…</string>
+    <string name="webdav_sync_nothing_to_do">两端已经一致，没有需要改动的记录</string>
+    <string name="webdav_sync_synced">同步完成</string>
+    <string name="webdav_sync_counts">上传 %1$d · 下载 %2$d · 云端删 %3$d · 本地删 %4$d · 延后 %5$d · 失败 %6$d</string>
+    <string name="webdav_sync_deferred">有记录暂时写不进本机，会在下次同步再试</string>
+    <string name="webdav_sync_conflicts">有记录需要你确认（冲突中心）</string>
+    <string name="webdav_sync_failed_records">有记录没能同步，请稍后重试</string>
+    <string name="webdav_sync_restart_needed">云端在同步过程中发生了变化，本次已停止；请再点一次「立即同步」</string>
+    <string name="webdav_sync_wrong_folder">云端目录是空的，而本机有记录：请检查地址是否指向了正确的目录</string>
+    <string name="webdav_sync_listing_incomplete">没能完整列出云端目录，本次没有改动任何记录，请稍后重试</string>
+    <string name="webdav_sync_broke">同步过程中出错，请重试</string>
+
+    <!-- 冲突中心（②-v2：一轮同步后需要人工确认的记录） -->
+    <string name="title_conflict_center">冲突中心</string>
+    <string name="btn_close">关闭</string>
+    <string name="conflict_center_empty">没有需要确认的记录</string>
+    <string name="conflict_center_row">%1$s · %2$s（%3$d 处字段差异）</string>
+    <string name="conflict_center_row_no_diffs">%1$s · %2$s</string>
+    <string name="conflict_center_no_diffs">这条没有可比较的字段差异，同步时已按「保留改动」处理</string>
+    <string name="conflict_center_record">记录：%1$s</string>
+    <string name="conflict_center_fields_header">字段（上次同步 ／ 本机 ／ 云端）：</string>
+    <string name="conflict_center_field">· %1$s —— %2$s\n    上次同步：%3$s\n    本机：%4$s\n    云端：%5$s</string>
+    <string name="conflict_center_side_absent">（无）</string>
+    <string name="conflict_center_capped">待确认的记录较多，这里只列出前 %1$d 条；处理完请再同步一次</string>
+    <string name="conflict_center_truncated">过长的字段值只显示了前 %1$d 个字符</string>
+    <string name="conflict_center_dropped">有 %1$d 条记录的内容读不回来，未能列出</string>
+    <string name="conflict_kind_both_edited">两端都改了这条记录</string>
+    <string name="conflict_kind_deleted_there_edited_here">云端删了、本机改了（已保留本机的改动）</string>
+    <string name="conflict_kind_deleted_here_edited_there">本机删了、云端改了（已保留云端的改动）</string>
+    <string name="conflict_kind_unreadable">云端文件读不出来，已原样保留</string>
+    <!-- 冲突中心：解决动作（②-v3：选好哪边赢，交给下一轮同步执行） -->
+    <string name="conflict_center_keep_local">保留本机</string>
+    <string name="conflict_center_take_remote">采用云端</string>
+    <string name="conflict_center_choice_hint">选择后不会立刻改动账本，会在下次同步时按这个决定处理这条记录</string>
+    <string name="conflict_center_choice_saved">已记下：%1$s，下次同步生效</string>
+    <string name="conflict_center_choice_failed">没能记下你的选择，请重试</string>
+    <string name="conflict_delta_local_changed">本机改过</string>
+    <string name="conflict_delta_remote_changed">云端改过</string>
+    <string name="conflict_delta_both_changed">两端改得不一样</string>
+    <string name="conflict_delta_only_local">本机有、云端没有</string>
+    <string name="conflict_delta_only_remote">云端有、本机没有</string>
+    <string name="conflict_delta_local_dropped">本机删了这个字段</string>
+    <string name="conflict_delta_remote_dropped">云端删了这个字段</string>
+    <string name="conflict_delta_both_dropped">两端都没了这个字段</string>
+    <string name="conflict_record_type_book">账簿</string>
+    <string name="conflict_record_type_account">账户</string>
+    <string name="conflict_record_type_transaction">交易</string>
+    <string name="conflict_record_type_split">分录</string>
+
+    <!-- 扩展视图（第二十四轮） -->
+    <string name="toast_transaction_sides_must_differ">Debit and credit accounts must be different</string>
+    <string name="menu_extended_view">Extended view</string>
+    <string name="menu_show_extended_view">Use extended view</string>
+    <string name="menu_extended_view_settings">Configure extended display</string>
+    <string name="title_extended_views">Extended views</string>
+    <string name="label_no_extended_views">No extended views yet</string>
+    <string name="extended_field_account">Account</string>
+    <string name="extended_field_notes">Notes</string>
+    <string name="extended_field_number">Number</string>
+    <string name="extended_field_tags">Tags</string>
+    <string name="hint_extended_view_name">View name</string>
+    <string name="title_new_extended_view">New extended view</string>
+    <string name="title_edit_extended_view">Edit extended view</string>
+    <string name="label_extended_view_default">Default</string>
+    <string name="menu_set_extended_view_default">Set as default</string>
+    <string name="menu_edit_extended_view">Name and fields</string>
+    <string name="menu_delete_extended_view">Delete</string>
+    <string name="confirm_delete_extended_view">Delete extended view “%1$s”?</string>
+    <string name="toast_extended_view_saved">Extended view saved</string>
+    <string name="toast_extended_view_deleted">Extended view deleted</string>
+    <string name="toast_extended_view_default_set">Default extended view: %1$s</string>
+    <string name="toast_extended_view_name_required">Enter a name for the view</string>
+    <string name="toast_extended_view_fields_required">Pick at least one field</string>
+    <string name="label_extended_view_field_count">Fields: %1$d</string>
+    <string name="extended_view_none">No extended view</string>
+    <string name="label_extended_display_fields">Fields to show</string>
+    <string name="hint_extended_display_fields">Pick a view above, then tick the fields it should add</string>
+    <string name="toast_extended_view_selected">Using extended view: %1$s</string>
+    <string name="toast_extended_view_disabled">Extended display turned off</string>
+    <string name="bulk_edit_running">Updating %1$d transactions…</string>
+    <string name="menu_report_search_results">Report</string>
+    <string name="title_search_report">Search results</string>
+    <string name="label_search_report_empty">Nothing to report for this search</string>
+    <string name="label_search_report_total">Total</string>
+    <string name="label_search_report_count">%1$d transactions</string>
+    <string name="label_search_report_date">Date</string>
+    <string name="label_search_report_description">Description</string>
+    <string name="label_search_report_account">Account</string>
+    <string name="label_search_report_amount">Amount</string>
+    <!-- 搜索结果报表的图型：表格是默认（合计列表），其余三种是图。顺序即下拉顺序。 -->
+    <string name="label_search_report_chart_type">Chart type</string>
+    <string-array name="search_report_chart_types">
+        <item>Table</item>
+        <item>Pie</item>
+        <item>Bar</item>
+        <item>Line</item>
+    </string-array>
+    <string name="search_report_chart_by_account">By account (%1$s)</string>
+    <string name="search_report_chart_by_date">By date (%1$s)</string>
+    <string name="search_report_chart_empty">There is nothing to chart</string>
+    <string name="search_report_chart_note">Charts draw %1$s only; %2$s are left to the table</string>
+    <string name="btn_manual_date">Enter manually</string>
+    <string name="title_manual_date">Enter date</string>
+    <string name="hint_manual_date">20260129</string>
+    <string name="hint_manual_date_format">Eight digits, year first — e.g. 20260129</string>
+    <string name="toast_manual_date_invalid">Not a valid date — type it as 20260129</string>
+    <string name="title_manual_date_range">Enter date range</string>
+    <string name="label_manual_date_from">From</string>
+    <string name="label_manual_date_to">To</string>
+    <string name="toast_manual_date_range_invalid">Check the two dates — 20260129, and the end cannot come before the start</string>
 </resources>

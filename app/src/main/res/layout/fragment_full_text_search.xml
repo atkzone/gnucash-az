@@ -1,0 +1,87 @@
+<!--
+  Layout for the "全文" (full-text) search screen — the compact keyword search
+  reachable from the home screen's top-right action.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="16dp"
+    tools:context=".ui.common.FormActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/label_query"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/full_text_search_label"
+            android:textAppearance="?android:textAppearanceSmall" />
+
+        <EditText
+            android:id="@+id/input_query"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/full_text_search_hint"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="1"
+            android:singleLine="true" />
+
+        <TextView
+            android:id="@+id/text_syntax"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/full_text_search_syntax"
+            android:textAppearance="?android:textAppearanceSmall" />
+
+        <View style="@style/Divider" />
+
+        <Button
+            android:id="@+id/btn_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:drawableStart="@drawable/ic_search"
+            android:text="@string/action_find" />
+
+        <!-- Saved searches ("常用搜索") and the jump to the criteria form. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_save_favorite"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/search_templates_save" />
+
+            <Button
+                android:id="@+id/btn_favorites"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/search_templates_load" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_advanced_search"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_menu_advanced_search" />
+    </LinearLayout>
+</ScrollView>

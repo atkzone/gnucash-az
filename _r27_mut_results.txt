@@ -1,0 +1,47 @@
+APPLIED m01_keep_local_now_deletes_remote (SyncRoundPlanner.kt, eol='\n')
+APPLIED m02_forced_push_loses_must_not_exist (SyncRoundPlanner.kt, eol='\n')
+m02_forced_push_loses_must_not_exist                       RED(bitten)                SyncRoundPlannerTest > keeping this device's version where the peer confirmed a deletion recreates it as a create FAILED
+APPLIED m03_take_remote_over_peer_deletion_stays_parked (SyncRoundPlanner.kt, eol='\n')
+m03_take_remote_over_peer_deletion_stays_parked            RED(bitten)                SyncRoundPlannerTest > taking the peer's version of a confirmed deletion accepts the deletion here FAILED
+APPLIED m04_moot_answer_never_dropped (SyncRoundPlanner.kt, eol='\n')
+m04_moot_answer_never_dropped                              RED(bitten)                SyncRoundPlannerTest > an answer that is no longer needed is dropped rather than left to resurface FAILED
+APPLIED m05_watched_answer_dropped_as_moot (SyncRoundPlanner.kt, eol='\n')
+m05_watched_answer_dropped_as_moot                         RED(bitten)                SyncRoundPlannerTest > an answer for a record that is only under observation is kept FAILED
+APPLIED m06_round_spends_answer_without_landing (SyncRound.kt, eol='\n')
+m06_round_spends_answer_without_landing                    RED(bitten)                SyncRoundTest > a rejected forced write keeps the answer for the next attempt[26] FAILED
+APPLIED m07_round_never_spends_answers (SyncRound.kt, eol='\n')
+m07_round_never_spends_answers                             RED(bitten)                SyncRoundTest > an answer for a record that stopped conflicting is dropped, not left to resurface[26] FAILED
+APPLIED m08_unreadable_row_guessed_as_local (SyncStateDbAdapter.kt, eol='\n')
+m08_unreadable_row_guessed_as_local                        RED(bitten)                SyncStateDbAdapterTest > an answer this build cannot read is ignored, not guessed at[26] FAILED
+APPLIED m09_null_answer_reports_failure (SyncStateDbAdapter.kt, eol='\n')
+m09_null_answer_reports_failure                            RED(bitten)                SyncStateDbAdapterTest > putting an answer reports whether the row landed[26] FAILED
+APPLIED m10_unreadable_offers_adopt_remote (ConflictCenterText.kt, eol='\n')
+m10_unreadable_offers_adopt_remote                         RED(bitten)                ConflictCenterTextTest > an unreadable record offers only one way to settle it[26] FAILED
+APPLIED m11_store_reports_failure_as_success (ConflictResolutionStore.kt, eol='\n')
+m11_store_reports_failure_as_success                       RED(bitten)                ConflictResolutionStoreTest > a write that reports failure is reported as a failure, not swallowed[26] FAILED
+==== restore verification ====
+VERIFY m01_keep_local_now_deletes_remote: byte-identical
+VERIFY m02_forced_push_loses_must_not_exist: byte-identical
+VERIFY m03_take_remote_over_peer_deletion_stays_parked: byte-identical
+VERIFY m04_moot_answer_never_dropped: byte-identical
+VERIFY m05_watched_answer_dropped_as_moot: byte-identical
+VERIFY m06_round_spends_answer_without_landing: byte-identical
+VERIFY m07_round_never_spends_answers: byte-identical
+VERIFY m08_unreadable_row_guessed_as_local: byte-identical
+VERIFY m09_null_answer_reports_failure: byte-identical
+VERIFY m10_unreadable_offers_adopt_remote: byte-identical
+VERIFY m11_store_reports_failure_as_success: byte-identical
+APPLIED m01_keep_local_forces_nothing (SyncRoundPlanner.kt, eol='\n')
+m01_keep_local_forces_nothing                              RED(bitten)                SyncRoundPlannerTest > keeping this device's version where the peer confirmed a deletion recreates it as a create FAILED
+==== restore verification ====
+VERIFY m01_keep_local_forces_nothing: byte-identical
+VERIFY m02_forced_push_loses_must_not_exist: byte-identical
+VERIFY m03_take_remote_over_peer_deletion_stays_parked: byte-identical
+VERIFY m04_moot_answer_never_dropped: byte-identical
+VERIFY m05_watched_answer_dropped_as_moot: byte-identical
+VERIFY m06_round_spends_answer_without_landing: byte-identical
+VERIFY m07_round_never_spends_answers: byte-identical
+VERIFY m08_unreadable_row_guessed_as_local: byte-identical
+VERIFY m09_null_answer_reports_failure: byte-identical
+VERIFY m10_unreadable_offers_adopt_remote: byte-identical
+VERIFY m11_store_reports_failure_as_success: byte-identical

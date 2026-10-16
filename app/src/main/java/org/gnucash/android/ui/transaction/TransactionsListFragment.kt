@@ -33,6 +33,7 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentResultListener
 import androidx.loader.app.LoaderManager
@@ -52,6 +53,7 @@ import org.gnucash.android.databinding.CardviewTransactionBinding
 import org.gnucash.android.databinding.FragmentTransactionsListBinding
 import org.gnucash.android.db.DatabaseCursorLoader
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.TagsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
@@ -60,8 +62,13 @@ import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.updateAllWidgets
 import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment
+import org.gnucash.android.ui.transaction.view.ExtendedRowContentBuilder
+import org.gnucash.android.ui.transaction.view.ExtendedViewField
+import org.gnucash.android.ui.transaction.view.ExtendedViewStore
+import org.gnucash.android.ui.transaction.view.ExtendedViewsActivity
 import org.gnucash.android.ui.util.displayBalance
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
+import org.gnucash.android.util.TagCodec
 import org.gnucash.android.util.formatMediumDate
 import timber.log.Timber
 
@@ -82,6 +89,11 @@ class TransactionsListFragment : MenuFragment(),
     private var useCompactView = false
     private var useDoubleEntry = true
     private var useAbsoluteDate = false
+
+    /** Fields the active extended view draws, or `null` when it is not in use. */
+    private var extendedFields: Set<ExtendedViewField>? = null
+
+    private val extendedViewStore by lazy { ExtendedViewStore.of(requireContext()) }
 
     private var transactionsAdapter: TransactionCursorAdapter? = null
 
@@ -188,6 +200,10 @@ class TransactionsListFragment : MenuFragment(),
 
     override fun onResume() {
         super.onResume()
+        // Re-read the extended display: the user may have just come back from
+        // "设置扩展显示" having ticked another set of fields, and the loader restart below
+        // is what actually redraws the rows with them.
+        extendedFields = extendedViewStore.activeFields()
         refresh()
     }
 
@@ -227,8 +243,18 @@ class TransactionsListFragment : MenuFragment(),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_toggle_compact -> {
-                item.isChecked = !item.isChecked
-                useCompactView = item.isChecked
+                val checked = !item.isChecked
+                item.isChecked = checked
+                useCompactView = checked
+                // The two display modes are alternatives, not layers: a compact row has
+                // no line to put extended fields on, so turning compact on turns the
+                // extended display off. It goes through the stored selection, which is
+                // the same switch the settings screen shows.
+                if (checked) {
+                    extendedViewStore.select(null)
+                    extendedFields = extendedViewStore.activeFields()
+                }
+                saveCompactView(checked)
                 refresh()
                 true
             }
@@ -240,7 +266,25 @@ class TransactionsListFragment : MenuFragment(),
                 true
             }
 
+            R.id.menu_extended_view_settings -> {
+                ExtendedViewsActivity.show(requireContext())
+                true
+            }
+
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    /**
+     * Remembers the compact choice for this book.
+     *
+     * It used to go to `savedInstanceState` only, so it survived a rotation and nothing
+     * else — reopening the app brought the tall card back while the menu still claimed
+     * the compact mode was on.
+     */
+    private fun saveCompactView(compact: Boolean) {
+        getBookPreferences(requireContext()).edit {
+            putBoolean(getString(R.string.key_use_compact_list), compact)
         }
     }
 
@@ -307,7 +351,15 @@ class TransactionsListFragment : MenuFragment(),
         private val transactionDate: TextView = binding.transactionDate
         private val editTransaction: ImageView = binding.editTransaction
 
+        // Extended-view lines (第二十四轮); hidden unless the mode is on.
+        private val extendedFieldsRow: View = binding.extendedFields
+        private val extendedNotes: TextView = binding.extendedNotes
+        private val extendedNumber: TextView = binding.extendedNumber
+        private val extendedTags: TextView = binding.extendedTags
+
         private var transaction: Transaction? = null
+
+        private val tagsDbAdapter = TagsDbAdapter(accountsDbAdapter.holder)
 
         @ColorInt
         private val colorBalanceZero: Int = transactionAmount.currentTextColor
@@ -383,8 +435,12 @@ class TransactionsListFragment : MenuFragment(),
             if (useCompactView || !useDoubleEntry) {
                 secondaryText.isVisible = false
                 editTransaction.isVisible = false
+                renderExtended(null)
             } else {
-                secondaryText.isVisible = true
+                val fields = extendedFields
+                // The account line is itself a selectable field, so an extended view
+                // may hide it — together with the split count that shares the row.
+                secondaryText.isVisible = fields == null || ExtendedViewField.ACCOUNT in fields
                 editTransaction.isVisible = true
 
                 val splits = transaction.splits
@@ -415,7 +471,48 @@ class TransactionsListFragment : MenuFragment(),
                 editTransaction.setOnClickListener {
                     editTransaction(transactionUID, accountUID)
                 }
+
+                renderExtended(text)
             }
+        }
+
+        /**
+         * Draws the optional lines of the active extended view.
+         *
+         * [account] is the same "other side" label the card already resolved, so an
+         * extended view never looks the account name up a second time. With no
+         * active view (`extendedFields == null`) every line is hidden and the row
+         * keeps its exact old height.
+         */
+        private fun renderExtended(account: String?) {
+            val fields = extendedFields
+            val transaction = this.transaction
+            val content = if (fields == null || transaction == null) {
+                null
+            } else {
+                val tags = if (ExtendedViewField.TAGS in fields) {
+                    runCatching { tagsDbAdapter.getTagNamesForTransaction(transaction.uid) }
+                        .getOrDefault(emptyList())
+                } else {
+                    emptyList()
+                }
+                ExtendedRowContentBuilder.build(
+                    fields, account, transaction.notes, transaction.number, tags
+                )
+            }
+            extendedNotes.isVisible = content?.notes != null
+            extendedNotes.text = content?.notes.orEmpty()
+            extendedNumber.isVisible = content?.number != null
+            extendedNumber.text = content?.number.orEmpty()
+            val tagNames = content?.tags.orEmpty()
+            extendedTags.isVisible = tagNames.isNotEmpty()
+            extendedTags.text = tagNames.joinToString(" ") { TagCodec.PREFIX + it }
+            // The container ships GONE (so a row without an active view keeps its exact
+            // old height). Showing the children is not enough: without this line the
+            // whole extended view stays invisible and the feature silently never appears.
+            // Same predicate the pure test asserts; it ignores the account on purpose
+            // because the account line is drawn by the card itself, not in here.
+            extendedFieldsRow.isVisible = content?.hasExtraLines == true
         }
 
         /**

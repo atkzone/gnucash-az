@@ -67,6 +67,12 @@ object UxArgument {
     const val SCHEDULED_ACTION_UID: String = "scheduled_action_uid"
 
     /**
+     * Row id of a saved transaction template (feature ①d) whose fields should
+     * pre-fill the (new) transaction form.
+     */
+    const val SELECTED_TEMPLATE_ID: String = "transaction_template_id"
+
+    /**
      * Type of form displayed in the [FormActivity]
      */
     const val FORM_TYPE: String = "form_type"

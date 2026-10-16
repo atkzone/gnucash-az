@@ -68,6 +68,12 @@ class TransactionsDbAdapter(
     val commoditiesDbAdapter: CommoditiesDbAdapter = splitsDbAdapter.commoditiesDbAdapter
 
     /**
+     * Mirrors `#tag` tokens from a transaction's text into `tags`/`transaction_tags`
+     * on every save (feature ⑧). Lazy so opening a book does not pay for it.
+     */
+    private val tagsDbAdapter: TagsDbAdapter by lazy { TagsDbAdapter(holder) }
+
+    /**
      * Overloaded constructor. Creates adapter for already open db
      *
      * @param holder Database holder
@@ -122,6 +128,10 @@ class TransactionsDbAdapter(
                 val deleted = db.delete(SplitEntry.TABLE_NAME, deleteWhere, deleteArgs)
                 Timber.d("%d splits deleted", deleted)
             }
+
+            // Tags are derived from the transaction's own text, so they are re-synced
+            // on every save (idempotent: the old links are replaced).
+            tagsDbAdapter.syncFromTransaction(transaction)
         }
 
         return transaction
@@ -158,6 +168,13 @@ class TransactionsDbAdapter(
                             " = " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID + " ) "
                 )
                 deleteEmptyTransaction.execute()
+            }
+        }
+        // Import path: mirror `#tag` tokens so tags are queryable right away,
+        // without requiring the user to re-save each transaction.
+        if (rowInserted != 0L) {
+            for (transaction in transactions) {
+                tagsDbAdapter.syncFromTransaction(transaction)
             }
         }
         return rowInserted
@@ -652,11 +669,22 @@ class TransactionsDbAdapter(
 
     fun fetchSearch(where: String): Cursor? {
         if (where.isEmpty()) {
-            val orderBy = TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
-                    TransactionEntry.COLUMN_NUMBER + " DESC, " +
-                    TransactionEntry.COLUMN_ID + " DESC"
-            return fetchAllRecords(null, null, orderBy)
+            return fetchAllRecords(null, null, defaultSearchOrderBy(""))
         }
+        return fetchSearch(where, defaultSearchOrderBy("t."))
+    }
+
+    /**
+     * The same query as [fetchSearch], but with an explicit `ORDER BY` supplied
+     * by the caller (see `SearchSortOrder` — the search package owns the SQL
+     * fragments, this adapter only stamps them in).
+     *
+     * An empty WHERE becomes the literal `1` so the aliased double-join is
+     * still used (`AND ` with nothing after it would not parse). Keeping a
+     * single query shape means changing the sort can never change which rows
+     * match.
+     */
+    fun fetchSearch(where: String, orderBy: String): Cursor? {
         val table = (TransactionEntry.TABLE_NAME + " t"
                 + " INNER JOIN " + SplitEntry.TABLE_NAME + " s1" + " ON t." + TransactionEntry.COLUMN_UID
                 + " = s1." + SplitEntry.COLUMN_TRANSACTION_UID
@@ -664,12 +692,15 @@ class TransactionsDbAdapter(
                 + " = s2." + SplitEntry.COLUMN_TRANSACTION_UID
                 )
         val columns = allColumnsPrefix("t.")
-        val selection = "(s1.${SplitEntry.COLUMN_ID} < s2.${SplitEntry.COLUMN_ID}) AND $where"
-        val orderBy = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
-                "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
-                "t." + TransactionEntry.COLUMN_ID + " DESC"
+        val predicate = if (where.isEmpty()) "1" else where
+        val selection = "(s1.${SplitEntry.COLUMN_ID} < s2.${SplitEntry.COLUMN_ID}) AND $predicate"
         return db.query(true, table, columns, selection, null, null, null, orderBy, null)
     }
+
+    private fun defaultSearchOrderBy(prefix: String): String =
+        prefix + TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
+                prefix + TransactionEntry.COLUMN_NUMBER + " DESC, " +
+                prefix + TransactionEntry.COLUMN_ID + " DESC"
 
     private fun createTempView() {
         //the multiplication by 1.0 is to cause sqlite to handle the value as REAL and not to round off

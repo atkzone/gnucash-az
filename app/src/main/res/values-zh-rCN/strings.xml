@@ -399,6 +399,13 @@
     <string name="summary_select_backup_file">选择用于自动备份的文件</string>
     <string name="title_confirm_restore_backup">确认</string>
     <string name="msg_confirm_restore_backup_into_new_book">将会创建新的账簿</string>
+    <string name="title_import_backup_file">导入备份…</string>
+    <string name="summary_import_backup_file">从文件浏览器选择备份文件导入</string>
+    <string name="title_confirm_import_backup">确认导入备份</string>
+    <string name="msg_confirm_import_backup_into_new_book">将会以所选备份文件的内容创建新的账簿，是否继续？</string>
+    <string name="title_import_backup_unsupported_format">不支持的文件</string>
+    <string name="msg_import_backup_unsupported_format">所选文件不是账簿备份。支持的格式：%1$s</string>
+    <string name="btn_import">导入</string>
     <string name="btn_restore">还原</string>
     <string name="title_no_backups_found">没有发现备份</string>
     <string name="msg_no_backups_to_restore_from">没有找到备份文件</string>
@@ -432,4 +439,200 @@
     <string name="title_progress_processing_schedules">处理进度表</string>
     <string name="title_progress_processing_transactions">处理交易</string>
     <string name="title_tab_labels">显示带标签的选项卡</string>
+
+    <!-- 功能 ①a：多关键词搜索 + 常用搜索（保存/应用/改名/批量删） -->
+    <string name="search_criteria_none">"所有条件都不满足"</string>
+    <string name="search_templates_save">保存为常用搜索</string>
+    <string name="search_templates_load">常用搜索</string>
+    <string name="search_templates_manage">管理</string>
+    <string name="search_templates_rename">改名</string>
+    <string name="search_templates_delete">删除</string>
+    <string name="search_templates_delete_confirm">确定删除选中的常用搜索？此操作不可撤销。</string>
+    <string name="search_templates_deleted">已删除</string>
+    <string name="search_templates_saved">已保存为常用搜索</string>
+    <string name="search_templates_save_failed">保存失败</string>
+    <string name="search_templates_delete_failed">删除失败</string>
+    <string name="search_templates_name_hint">名称</string>
+    <string name="search_templates_name_required">请输入名称</string>
+    <string name="search_templates_empty">还没有常用搜索</string>
+    <string name="search_templates_invalid">该常用搜索为空或无法读取</string>
+    <string name="search_templates_delete_selected">删除所选</string>
+    <string name="search_templates_none_selected">请先勾选要删除的常用搜索</string>
+    <string name="search_templates_one_selected">改名请只勾选一项</string>
+
+    <!-- 功能 ⑧：标签 chip（搜索结果页） -->
+    <string name="search_filter_tag">按标签 %s 筛选</string>
+    <string name="search_filtered_by_tag">已按标签 %s 筛选</string>
+
+    <!-- 搜索词表：搜索界面用到的词一律用中文表示（高级搜索 / 全文搜索）。
+         全文搜索的入口、标题与提示语在默认资源里已是中文，这里只补历史遗留词条。 -->
+    <string name="title_search_form">高级搜索</string>
+    <string name="search_items_where">搜索满足以下条件的交易</string>
+    <string name="search_criteria_all">所有条件都满足</string>
+    <string name="search_criteria_any">满足任一条件</string>
+    <string name="search_field_date_posted">记账日期</string>
+    <string name="search_field_amount">金额</string>
+    <string name="search_field_value">数值</string>
+    <string name="search_field_account">账户</string>
+    <string name="search_field_any_field">任意字段</string>
+    <string name="search_field_tag">标签</string>
+    <string name="search_compare_contains">包含</string>
+    <string name="search_compare_equals">等于</string>
+    <string name="search_compare_date_lt">早于</string>
+    <string name="search_compare_date_lte">早于或等于</string>
+    <string name="search_compare_date_eq">等于</string>
+    <string name="search_compare_date_neq">不等于</string>
+    <string name="search_compare_date_gt">晚于</string>
+    <string name="search_compare_date_gte">晚于或等于</string>
+    <string name="search_compare_lt">小于</string>
+    <string name="search_compare_lte">小于或等于</string>
+    <string name="search_compare_eq">等于</string>
+    <string name="search_compare_neq">不等于</string>
+    <string name="search_compare_gt">大于</string>
+    <string name="search_compare_gte">大于或等于</string>
+    <string name="search_compare_debcred_lt">小于</string>
+    <string name="search_compare_debcred_lte">小于或等于</string>
+    <string name="search_compare_debcred_eq">等于</string>
+    <string name="search_compare_debcred_neq">不等于</string>
+    <string name="search_compare_debcred_gt">大于</string>
+    <string name="search_compare_debcred_gte">大于或等于</string>
+    <string name="search_compare_numeric_any">借记或贷记</string>
+    <string name="search_compare_numeric_debit">借记</string>
+    <string name="search_compare_numeric_credit">贷记</string>
+    <string name="search_compare_account_any">匹配任一账户</string>
+    <string name="search_compare_account_none">不匹配任何账户</string>
+
+    <!-- 功能 ①d：交易模板 -->
+    <string name="title_transaction_templates">交易模板</string>
+    <string name="label_no_transaction_templates">暂无交易模板</string>
+    <string name="menu_create_transaction_template">新建交易模板</string>
+    <string name="menu_transaction_template_actions">模板操作</string>
+    <string name="menu_use_transaction_template">新建交易</string>
+    <string name="title_new_transaction_template">新建模板</string>
+    <string name="title_edit_transaction_template">编辑模板</string>
+    <string name="hint_transaction_template_name">模板名称</string>
+    <string name="hint_transaction_template_amount">金额（留空表示空值）</string>
+    <string name="help_transaction_template_amount">金额留空即为“空值”，每次套用该模板时再填写。</string>
+    <string name="label_debit_account">借方账户</string>
+    <string name="label_credit_account">贷方账户</string>
+    <string name="label_transaction_template_no_amount">空值</string>
+    <string name="toast_transaction_template_name_required">请输入模板名称</string>
+    <string name="toast_transaction_template_accounts_required">请选择两个不同的借方与贷方账户</string>
+    <string name="toast_transaction_template_saved">模板已保存</string>
+    <string name="toast_transaction_template_save_failed">模板保存失败</string>
+    <string name="toast_transaction_template_deleted">模板已删除</string>
+    <string name="toast_transaction_template_delete_failed">模板删除失败</string>
+    <string name="toast_transaction_template_unreadable">该模板无法读取，请先编辑或删除</string>
+    <string name="confirm_delete_transaction_template">确定删除“%s”？</string>
+    <string name="transaction_template_accounts_summary">%1$s → %2$s</string>
+    <string name="label_transaction_template_no_account">无账户</string>
+    <string name="toast_transaction_template_amount_invalid">请输入合法金额，或留空表示空值</string>
+
+    <!-- 搜索结果：排序、合计与图表 -->
+    <string name="search_sort">排序</string>
+    <string name="search_sort_date_desc">日期（最新优先）</string>
+    <string name="search_sort_date_asc">日期（最早优先）</string>
+    <string name="search_sort_amount_desc">金额（从大到小）</string>
+    <string name="search_sort_amount_asc">金额（从小到大）</string>
+    <string name="search_sort_applied">已按%1$s排序</string>
+    <string name="search_summary_title">合计与统计</string>
+    <string name="search_summary_count">共 %1$d 笔交易</string>
+    <string name="search_summary_total_header">合计</string>
+    <string name="search_summary_by_account">按账户</string>
+    <string name="search_summary_by_tag">按标签（分类可能重叠）</string>
+    <string name="search_summary_no_category">（无）</string>
+    <string name="search_summary_empty">没有可统计的搜索结果</string>
+    <!-- 账户选择器（借贷两行上的过滤框） -->
+    <string name="title_select_account">选择账户</string>
+    <string name="title_search_debit_account">搜索借方账户</string>
+    <string name="title_search_credit_account">搜索贷方账户</string>
+    <string name="hint_search_account">输入关键字过滤账户</string>
+    <string name="label_no_matching_accounts">没有匹配的账户</string>
+
+    <!-- 搜索结果批量操作 -->
+    <string name="menu_search_select">批量选择</string>
+    <string name="bulk_selection_title">已选 %1$d 笔</string>
+    <string name="bulk_select_all">全选</string>
+    <string name="bulk_select_item">选择该交易</string>
+    <string name="bulk_edit">批量修改</string>
+    <string name="bulk_delete">批量删除</string>
+    <string name="bulk_edit_title">批量修改 %1$d 笔交易</string>
+    <string name="bulk_delete_confirm">确定删除选中的 %1$d 笔交易？此操作不可撤销。</string>
+    <string name="bulk_edit_field">要修改的字段</string>
+    <string name="bulk_edit_value">新值</string>
+    <string name="bulk_edit_text_hint">留空表示清空该字段</string>
+    <string name="bulk_edit_date_hint">日期格式：YYYY-MM-DD</string>
+    <string name="bulk_edit_tag_hint">标签名（不含 #）</string>
+    <string name="bulk_edit_tag_remove">移除该标签（默认是添加）</string>
+    <string name="bulk_edit_nothing_selected">请先选择至少一笔交易</string>
+    <string name="bulk_edit_done">已修改 %1$d 笔交易</string>
+    <string name="bulk_edit_nothing_updated">没有交易被修改，请检查新值</string>
+    <string name="bulk_delete_done">已删除 %1$d 笔交易</string>
+    <string name="bulk_field_description">描述</string>
+    <string name="bulk_field_notes">备注</string>
+    <string name="bulk_field_number">编号</string>
+    <string name="bulk_field_date">交易日期</string>
+    <string name="bulk_field_tag">标签</string>
+
+    <!-- 扩展视图（第二十四轮） -->
+    <string name="toast_transaction_sides_must_differ">借方账户与贷方账户不能相同</string>
+    <string name="menu_extended_view">扩展视图</string>
+    <string name="menu_show_extended_view">使用扩展视图</string>
+    <string name="menu_extended_view_settings">设置扩展显示</string>
+    <string name="title_extended_views">扩展视图</string>
+    <string name="label_no_extended_views">还没有扩展视图</string>
+    <string name="extended_field_account">对方账户</string>
+    <string name="extended_field_notes">备注</string>
+    <string name="extended_field_number">编号</string>
+    <string name="extended_field_tags">标签</string>
+    <string name="hint_extended_view_name">视图名称</string>
+    <string name="title_new_extended_view">新建扩展视图</string>
+    <string name="title_edit_extended_view">编辑扩展视图</string>
+    <string name="label_extended_view_default">默认</string>
+    <string name="menu_set_extended_view_default">设为默认</string>
+    <string name="menu_edit_extended_view">名称与字段</string>
+    <string name="menu_delete_extended_view">删除</string>
+    <string name="confirm_delete_extended_view">确定删除扩展视图“%1$s”？</string>
+    <string name="toast_extended_view_saved">扩展视图已保存</string>
+    <string name="toast_extended_view_deleted">扩展视图已删除</string>
+    <string name="toast_extended_view_default_set">默认扩展视图：%1$s</string>
+    <string name="toast_extended_view_name_required">请填写视图名称</string>
+    <string name="toast_extended_view_fields_required">请至少选择一个字段</string>
+    <string name="label_extended_view_field_count">字段：%1$d</string>
+    <string name="extended_view_none">不使用扩展显示</string>
+    <string name="label_extended_display_fields">显示的字段</string>
+    <string name="hint_extended_display_fields">先在上方选中一个扩展视图，再勾选它要加显示的字段</string>
+    <string name="toast_extended_view_selected">已使用扩展视图：%1$s</string>
+    <string name="toast_extended_view_disabled">已关闭扩展显示</string>
+    <string name="bulk_edit_running">正在更新 %1$d 笔交易…</string>
+    <string name="menu_report_search_results">报表</string>
+    <string name="title_search_report">搜索结果</string>
+    <string name="label_search_report_empty">本次搜索没有可显示的报表数据</string>
+    <string name="label_search_report_total">合计</string>
+    <string name="label_search_report_count">共 %1$d 笔</string>
+    <string name="label_search_report_date">日期</string>
+    <string name="label_search_report_description">描述</string>
+    <string name="label_search_report_account">账户</string>
+    <string name="label_search_report_amount">金额</string>
+    <!-- 搜索结果报表的图型：表格是默认（合计列表），其余三种是图。顺序即下拉顺序。 -->
+    <string name="label_search_report_chart_type">图型</string>
+    <string-array name="search_report_chart_types">
+        <item>表格</item>
+        <item>饼图</item>
+        <item>柱状图</item>
+        <item>折线图</item>
+    </string-array>
+    <string name="search_report_chart_by_account">按账户（%1$s）</string>
+    <string name="search_report_chart_by_date">按日期（%1$s）</string>
+    <string name="search_report_chart_empty">没有可绘制图表的数据</string>
+    <string name="search_report_chart_note">图表只统计 %1$s 的数据；%2$s 见表格</string>
+    <string name="btn_manual_date">手工填写</string>
+    <string name="title_manual_date">手工填写日期</string>
+    <string name="hint_manual_date">20260129</string>
+    <string name="hint_manual_date_format">八位数字，依次为年月日 — 例如 20260129</string>
+    <string name="toast_manual_date_invalid">日期格式不对，请按 20260129 输入</string>
+    <string name="title_manual_date_range">手工填写日期范围</string>
+    <string name="label_manual_date_from">起始</string>
+    <string name="label_manual_date_to">结束</string>
+    <string name="toast_manual_date_range_invalid">请检查两个日期（20260129）；结束不能早于起始</string>
 </resources>

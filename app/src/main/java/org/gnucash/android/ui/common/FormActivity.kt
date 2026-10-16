@@ -30,6 +30,7 @@ import org.gnucash.android.ui.budget.BudgetAmountEditorFragment
 import org.gnucash.android.ui.budget.BudgetFormFragment
 import org.gnucash.android.ui.export.ExportFormFragment
 import org.gnucash.android.ui.passcode.PasscodeLockActivity
+import org.gnucash.android.ui.search.FullTextSearchFragment
 import org.gnucash.android.ui.search.SearchFormFragment
 import org.gnucash.android.ui.transaction.SplitEditorFragment
 import org.gnucash.android.ui.transaction.TransactionFormFragment
@@ -52,7 +53,8 @@ class FormActivity : PasscodeLockActivity() {
         SPLIT_EDITOR,
         BUDGET,
         BUDGET_AMOUNT_EDITOR,
-        SEARCH
+        SEARCH,
+        FULL_TEXT_SEARCH
     }
 
     private lateinit var binding: ActivityFormBinding
@@ -106,6 +108,7 @@ class FormActivity : PasscodeLockActivity() {
             FormType.BUDGET -> showBudgetFormFragment(args)
             FormType.BUDGET_AMOUNT_EDITOR -> showBudgetAmountEditorFragment(args)
             FormType.SEARCH -> showSearchForm(args)
+            FormType.FULL_TEXT_SEARCH -> showFullTextSearch(args)
         }
     }
 
@@ -188,6 +191,16 @@ class FormActivity : PasscodeLockActivity() {
      */
     private fun showSearchForm(args: Bundle) {
         val fragment = SearchFormFragment()
+        showFormFragment(fragment, args)
+    }
+
+    /**
+     * Load the full-text ("全文") search fragment
+     *
+     * @param args Arguments
+     */
+    private fun showFullTextSearch(args: Bundle) {
+        val fragment = FullTextSearchFragment()
         showFormFragment(fragment, args)
     }
 

@@ -18,7 +18,6 @@ package org.gnucash.android.ui.account
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.SearchManager
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -28,7 +27,6 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.appcompat.widget.SearchView
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -65,21 +63,10 @@ import timber.log.Timber
  */
 class AccountsActivity : BaseDrawerActivity(),
     OnAccountClickedListener,
-    Refreshable,
-    SearchView.OnQueryTextListener,
-    SearchView.OnCloseListener {
+    Refreshable {
     private lateinit var pagerAdapter: AccountViewPagerAdapter
     private lateinit var binding: ActivityAccountsBinding
 
-    /**
-     * Search view for searching accounts
-     */
-    private var searchView: SearchView? = null
-
-    /**
-     * Filter for which accounts should be displayed. Used by search interface
-     */
-    private var currentFilter: String? = null
     private var isShowHiddenAccounts = false
     private var isShowTabLabels = false
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
@@ -242,16 +229,6 @@ class AccountsActivity : BaseDrawerActivity(),
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.account_actions, menu)
-        // Associate searchable configuration with the SearchView
-        val searchView = menu.findItem(R.id.menu_search).actionView as? SearchView
-        this.searchView = searchView
-        if (searchView != null) {
-            val activity: Activity = this
-            val searchManager = activity.getSystemService(SEARCH_SERVICE) as SearchManager
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.componentName))
-            searchView.setOnQueryTextListener(this)
-            searchView.setOnCloseListener(this)
-        }
         return true
     }
 
@@ -265,6 +242,13 @@ class AccountsActivity : BaseDrawerActivity(),
         return when (item.itemId) {
             R.id.menu_hidden -> {
                 toggleHidden(item)
+                true
+            }
+
+            // The top-right action used to be an account-name filter. It is now
+            // "全文": the full-text (keyword) search over transactions.
+            R.id.menu_search -> {
+                TransactionsActivity.openFullTextSearch(this)
                 true
             }
 
@@ -285,44 +269,6 @@ class AccountsActivity : BaseDrawerActivity(),
     }
 
     override fun accountChanged(accountUID: String) = Unit
-
-    override fun onClose(): Boolean {
-        val searchView = this.searchView
-        if (searchView != null) {
-            if (!searchView.query.isNullOrEmpty()) {
-                searchView.setQuery(null, true)
-            }
-        }
-        return true
-    }
-
-    override fun onQueryTextChange(newText: String?): Boolean {
-        val newFilter = newText
-        val oldFilter = currentFilter
-        if (oldFilter == null && newFilter == null) {
-            return true
-        }
-        if (oldFilter != null && oldFilter == newFilter) {
-            return true
-        }
-        setSearchFilter(newFilter)
-        return true
-    }
-
-    override fun onQueryTextSubmit(query: String?): Boolean {
-        //nothing to see here, move along
-        return true
-    }
-
-    private fun setSearchFilter(filter: String?) {
-        currentFilter = filter
-        // apply to each page
-        val count = pagerAdapter.itemCount
-        for (i in 0 until count) {
-            val fragment = pagerAdapter.getFragment(i) as AccountsListFragment?
-            fragment?.onQueryTextChange(filter)
-        }
-    }
 
     private fun toggleHidden(item: MenuItem) {
         showHiddenAccounts(item, !item.isChecked)

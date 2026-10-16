@@ -47,16 +47,44 @@ class DateRangePickerDialogFragment : VolatileDialogFragment() {
         binding.calendarView.selectDate(date)
 
         val context = requireContext()
-        return AlertDialog.Builder(context, theme)
+        val dialog = AlertDialog.Builder(context, theme)
             .setTitle(R.string.report_time_range_picker_title)
             .setView(binding.root)
             .setNegativeButton(R.string.btn_cancel) { _, _ ->
                 // Dismisses itself
             }
+            .setNeutralButton(R.string.btn_manual_date, null)
             .setPositiveButton(R.string.btn_ok) { _, _ ->
                 onRangeSelected(binding)
             }
             .create()
+
+        // Installed with a null listener on purpose: AlertDialog's own neutral handler
+        // dismisses the dialog, which would close the calendar before anything is typed.
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
+                .setOnClickListener { showManualEntry() }
+        }
+        return dialog
+    }
+
+    /**
+     * Opens the typed-range dialog on whatever period the calendar is showing right now.
+     *
+     * The report calendar is a *range* control, so its 手工填写 names two days; the typed
+     * pair is reported through the very listener the calendar uses, which is what keeps
+     * this one change enough for every report.
+     */
+    private fun showManualEntry() {
+        ManualDateRangeDialogFragment
+            .newInstance(
+                startRange.toDate().time,
+                endRange.toDate().time
+            ) { start, end ->
+                dateRangeSetListener?.onDateRangeSet(LocalDate(start), LocalDate(end))
+                dismiss()
+            }
+            .show(parentFragmentManager, ManualDateRangeDialogFragment.TAG)
     }
 
     private fun onRangeSelected(binding: DialogDateRangePickerBinding) {

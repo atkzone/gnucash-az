@@ -1,0 +1,12 @@
+R27 咬合（变异）判定表 —— 11/11 RED(bitten)，逐处逐字节还原
+m01_keep_local_forces_nothing                              RED(bitten)                SyncRoundPlannerTest > keeping this device's version where the peer confirmed a deletion recreates it as a create FAILED
+m02_forced_push_loses_must_not_exist                       RED(bitten)                SyncRoundPlannerTest > keeping this device's version where the peer confirmed a deletion recreates it as a create FAILED
+m03_take_remote_over_peer_deletion_stays_parked            RED(bitten)                SyncRoundPlannerTest > taking the peer's version of a confirmed deletion accepts the deletion here FAILED
+m04_moot_answer_never_dropped                              RED(bitten)                SyncRoundPlannerTest > an answer that is no longer needed is dropped rather than left to resurface FAILED
+m05_watched_answer_dropped_as_moot                         RED(bitten)                SyncRoundPlannerTest > an answer for a record that is only under observation is kept FAILED
+m06_round_spends_answer_without_landing                    RED(bitten)                SyncRoundTest > a rejected forced write keeps the answer for the next attempt[26] FAILED
+m07_round_never_spends_answers                             RED(bitten)                SyncRoundTest > an answer for a record that stopped conflicting is dropped, not left to resurface[26] FAILED
+m08_unreadable_row_guessed_as_local                        RED(bitten)                SyncStateDbAdapterTest > an answer this build cannot read is ignored, not guessed at[26] FAILED
+m09_null_answer_reports_failure                            RED(bitten)                SyncStateDbAdapterTest > putting an answer reports whether the row landed[26] FAILED
+m10_unreadable_offers_adopt_remote                         RED(bitten)                ConflictCenterTextTest > an unreadable record offers only one way to settle it[26] FAILED
+m11_store_reports_failure_as_success                       RED(bitten)                ConflictResolutionStoreTest > a write that reports failure is reported as a failure, not swallowed[26] FAILED

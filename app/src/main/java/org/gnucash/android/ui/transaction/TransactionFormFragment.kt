@@ -64,12 +64,16 @@ import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
+import org.gnucash.android.ui.account.AccountConditions
+import org.gnucash.android.ui.account.AccountSearchDialogFragment
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.updateAllWidgets
 import org.gnucash.android.ui.snackLong
 import org.gnucash.android.ui.snackShort
+import org.gnucash.android.ui.template.TransactionTemplate
+import org.gnucash.android.db.adapter.TransactionTemplateDbAdapter
 import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment
 import org.gnucash.android.ui.util.RecurrenceParser.parse
 import org.gnucash.android.ui.util.RecurrenceViewClickListener
@@ -109,6 +113,22 @@ class TransactionFormFragment : MenuFragment(),
      * Adapter for transfer account spinner
      */
     private var accountTransferNameAdapter: QualifiedAccountNameAdapter? = null
+
+    /**
+     * Adapter for the debit-side spinner. Unlike the transfer spinner this one
+     * **includes** the account the form was opened from, because the debit side
+     * may well be that very account.
+     */
+    private var accountDebitNameAdapter: QualifiedAccountNameAdapter? = null
+
+    /** Template used to pre-fill a new transaction (feature ①d), or `null`. */
+    private var templatePrefill: TransactionTemplate? = null
+
+    /**
+     * `true` once the multi-split editor owns the splits. Replaces the old
+     * "the type switch is hidden" probe now that both sides are always shown.
+     */
+    private var splitEditorActive = false
 
     /**
      * Transaction to be created/updated
@@ -185,11 +205,14 @@ class TransactionFormFragment : MenuFragment(),
 
         val binding = this.binding!!
         setListeners(binding)
+        bindAccountSearchResults(binding)
 
         val account = requireAccount()
         //updateTransferAccountsList must only be called after initializing accountsDbAdapter
         updateTransferAccountsList(binding, account)
+        updateDebitAccountsList(binding, account)
         bind(binding, account)
+        applyTemplatePrefill(binding)
 
         val transaction = transaction
         if (transaction == null || transaction.id == 0L) {
@@ -277,6 +300,20 @@ class TransactionFormFragment : MenuFragment(),
         }
         editMode = transaction != null
         this.transaction = transaction
+
+        // A template only ever seeds a *new* transaction; editing an existing one
+        // must show what is actually stored.
+        if (transaction == null) {
+            val templateId = args.getLong(UxArgument.SELECTED_TEMPLATE_ID, 0L)
+            if (templateId > 0L) {
+                templatePrefill = try {
+                    TransactionTemplateDbAdapter.instance.getRecord(templateId)
+                } catch (e: Exception) {
+                    Timber.e(e, "Could not load transaction template #%d", templateId)
+                    null
+                }
+            }
+        }
     }
 
     @Deprecated("Deprecated in Java")
@@ -433,7 +470,7 @@ class TransactionFormFragment : MenuFragment(),
         splitsList.addAll(splits)
         val splitsSize = splits.size
         toggleAmountInputEntryMode(binding, splitsSize <= 2)
-        binding.inputTransactionType.isVisible = splitsSize <= 2
+        splitEditorActive = splitsSize > 2
 
         splitValue = null
         splitQuantity = null
@@ -451,8 +488,12 @@ class TransactionFormFragment : MenuFragment(),
         //disable editing of the transfer account. User should open editor
         if (splitsSize == 2 && splitsList[0].isPairOf(splitsList[1])) {
             for (split in splits) {
-                //two splits, one belongs to this account and the other to another account
-                if (useDoubleEntry && split.accountUID != accountUID) {
+                if (!useDoubleEntry) continue
+                // Both sides are shown now: the debit split drives the debit
+                // spinner and the credit split drives the transfer (credit) one.
+                if (split.type == TransactionType.DEBIT) {
+                    setSelectedDebitAccount(binding, split.accountUID)
+                } else {
                     setSelectedTransferAccount(binding, split.accountUID)
                 }
             }
@@ -477,6 +518,7 @@ class TransactionFormFragment : MenuFragment(),
         binding: FragmentTransactionFormBinding,
         visible: Boolean
     ) {
+        binding.layoutDebitEntry.isVisible = visible
         binding.layoutDoubleEntry.isVisible = visible
         binding.btnSplitEditor.isVisible = visible
     }
@@ -529,29 +571,143 @@ class TransactionFormFragment : MenuFragment(),
         binding: FragmentTransactionFormBinding,
         account: Account
     ) {
-        val accountUID = account.uid
-        val conditions = (AccountEntry.COLUMN_UID + " != ?"
-                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
-                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
-                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0")
+        val conditions = AccountConditions.selectable()
 
         accountTransferNameAdapter = QualifiedAccountNameAdapter(
             binding.root.context,
-            conditions,
-            arrayOf(accountUID, AccountType.ROOT.name),
+            conditions.first,
+            conditions.second,
             accountsDbAdapter,
             viewLifecycleOwner
         ).load { _ ->
-            var transferUID = account.defaultTransferAccountUID
-            if (transaction != null) {
-                val split = transaction!!.getTransferSplit(accountUID)
-                if (split != null) {
-                    transferUID = split.accountUID
-                }
-            }
+            // The credit side comes from the CREDIT split of the transaction being
+            // edited (see TransactionSides). Asking getTransferSplit() about the
+            // *opening* account is what used to put the debit account here: when the
+            // form is opened from the credit side, "the other split" is the debit one.
+            val transferUID = TransactionSides.creditAccountUid(transaction)
+                ?: templatePrefill?.creditAccountUid
+                ?: account.defaultTransferAccountUID
             setSelectedTransferAccount(binding, transferUID)
         }
         binding.inputTransferAccountSpinner.adapter = accountTransferNameAdapter
+    }
+
+    /**
+     * Updates the list of possible **debit** accounts.
+     *
+     * Deliberately not filtered the way the transfer list is: the debit side is
+     * allowed to be the account the form was started from (in fact that is the
+     * default), so excluding it would make the default unselectable.
+     */
+    private fun updateDebitAccountsList(
+        binding: FragmentTransactionFormBinding,
+        account: Account
+    ) {
+        val conditions = AccountConditions.selectable()
+
+        accountDebitNameAdapter = QualifiedAccountNameAdapter(
+            binding.root.context,
+            conditions.first,
+            conditions.second,
+            accountsDbAdapter,
+            viewLifecycleOwner
+        ).load { _ ->
+            val debitUID = TransactionSides.debitAccountUid(transaction)
+                ?: templatePrefill?.debitAccountUid
+                ?: account.uid
+            setSelectedDebitAccount(binding, debitUID)
+        }
+        binding.inputDebitAccountSpinner.adapter = accountDebitNameAdapter
+    }
+
+    /**
+     * Selects the debit account.
+     *
+     * Deliberately mirrors [setSelectedTransferAccount]: on an unknown uid (or a
+     * list that has not loaded yet, where every lookup answers -1) it returns
+     * **without** touching the spinner. Falling back to position 0 here is what
+     * used to break "edit transaction": [bindSplits] calls this while the account
+     * list is still loading, and `setSelection(0)` on an empty spinner throws
+     * [IndexOutOfBoundsException], bouncing the user straight back to the list.
+     * The adapter's own load callback applies the real selection once it arrives.
+     */
+    private fun setSelectedDebitAccount(
+        binding: FragmentTransactionFormBinding,
+        accountUID: String?
+    ) {
+        val adapter = accountDebitNameAdapter ?: return
+        val position = adapter.getPosition(accountUID)
+        if (position < 0) return
+        binding.inputDebitAccountSpinner.setSelection(position)
+    }
+
+    /** Account currently chosen on the debit side, or `null` before the list loads. */
+    private fun getDebitAccount(binding: FragmentTransactionFormBinding): Account? =
+        accountDebitNameAdapter?.getAccount(binding.inputDebitAccountSpinner.selectedItemPosition)
+
+    /** Opens the filterable account picker for the debit side. */
+    private fun openDebitAccountSearch(binding: FragmentTransactionFormBinding) {
+        val conditions = AccountConditions.selectable()
+        AccountSearchDialogFragment.newInstance(
+            R.string.title_search_debit_account,
+            REQUEST_DEBIT_ACCOUNT_SEARCH,
+            conditions.first,
+            conditions.second,
+            getDebitAccount(binding)?.uid
+        ).show(parentFragmentManager, AccountSearchDialogFragment.DEFAULT_REQUEST_KEY)
+    }
+
+    /** Opens the filterable account picker for the credit side. */
+    private fun openCreditAccountSearch(binding: FragmentTransactionFormBinding) {
+        val conditions = AccountConditions.selectable()
+        AccountSearchDialogFragment.newInstance(
+            R.string.title_search_credit_account,
+            REQUEST_CREDIT_ACCOUNT_SEARCH,
+            conditions.first,
+            conditions.second,
+            accountTransferNameAdapter
+                ?.getUID(binding.inputTransferAccountSpinner.selectedItemPosition)
+        ).show(parentFragmentManager, AccountSearchDialogFragment.DEFAULT_REQUEST_KEY)
+    }
+
+    /**
+     * Applies the account chosen in the picker to the matching spinner.
+     *
+     * Registered on `parentFragmentManager` — the same manager the picker is
+     * shown on — and scoped to the view lifecycle, so a result arriving after the
+     * form is gone cannot touch a dead view.
+     */
+    private fun bindAccountSearchResults(binding: FragmentTransactionFormBinding) {
+        parentFragmentManager.setFragmentResultListener(
+            REQUEST_DEBIT_ACCOUNT_SEARCH, viewLifecycleOwner
+        ) { _, result ->
+            val uid = result.getString(AccountSearchDialogFragment.EXTRA_ACCOUNT_UID)
+                ?: return@setFragmentResultListener
+            setSelectedDebitAccount(binding, uid)
+        }
+        parentFragmentManager.setFragmentResultListener(
+            REQUEST_CREDIT_ACCOUNT_SEARCH, viewLifecycleOwner
+        ) { _, result ->
+            val uid = result.getString(AccountSearchDialogFragment.EXTRA_ACCOUNT_UID)
+                ?: return@setFragmentResultListener
+            setSelectedTransferAccount(binding, uid)
+        }
+    }
+
+    /**
+     * Seeds a **new** transaction from a saved template (feature ①d).
+     *
+     * Only the plain fields are applied here — the account pair is applied by the
+     * two spinner callbacks, which run once their lists have loaded. A template
+     * saved with a blank amount deliberately leaves the field empty so the user
+     * fills it in.
+     */
+    private fun applyTemplatePrefill(binding: FragmentTransactionFormBinding) {
+        val template = templatePrefill ?: return
+        binding.inputTransactionName.setTextToEnd(template.description)
+        binding.notes.setText(template.notes)
+        binding.number.setText(template.number)
+        template.amount?.let { binding.inputTransactionAmount.setValue(it, true) }
     }
 
     /**
@@ -602,10 +758,36 @@ class TransactionFormFragment : MenuFragment(),
     private fun setListeners(binding: FragmentTransactionFormBinding) {
         binding.btnSplitEditor.setOnClickListener { openSplitEditor(binding) }
 
+        // The spinners stay (they show the current choice); the pickers are there
+        // because a real book has more accounts than anyone wants to scroll.
+        binding.btnSearchDebitAccount.setOnClickListener { openDebitAccountSearch(binding) }
+        binding.btnSearchCreditAccount.setOnClickListener { openCreditAccountSearch(binding) }
+
         binding.inputTransactionType.setAmountFormattingListener(
             binding.inputTransactionAmount,
             binding.currencySymbol
         )
+
+        binding.inputDebitAccountSpinner.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                adapterView: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null) return
+                val debitAccount = accountDebitNameAdapter?.getAccount(position) ?: return
+                // The debit side is the account the amount is expressed in, so it
+                // drives the commodity shown next to the amount field.
+                account = debitAccount
+                val commodity = debitAccount.commodity
+                binding.currencySymbol.text = commodity.symbol
+                binding.inputTransactionAmount.commodity = commodity
+            }
+
+            override fun onNothingSelected(adapterView: AdapterView<*>) = Unit
+        }
 
         binding.inputDate.setOnClickListener {
             val dateMillis = date.timeInMillis
@@ -639,18 +821,11 @@ class TransactionFormFragment : MenuFragment(),
             ) {
                 if (view == null) return
                 removeFavoriteIconFromSelectedView(view as TextView)
-                val transferAccountUID = accountTransferNameAdapter!!.getUID(position)
 
-                if (splitsList.size == 2) { //when handling simple transfer to one account
-                    val account = requireAccount()
-                    val accountUID = account.uid
-                    for (split in splitsList) {
-                        if (split.accountUID != accountUID) {
-                            split.accountUID = transferAccountUID
-                        }
-                        // else case is handled when saving the transactions
-                    }
-                }
+                // Both sides are written from the two spinners when the form is saved
+                // (extractSplitsFromView), so the old "rewrite whichever split is not
+                // the opening account" step is gone: it depended on which side the form
+                // was opened from and could repoint the debit split.
                 if (!userInteraction) {
                     userInteraction = true
                     return
@@ -676,7 +851,10 @@ class TransactionFormFragment : MenuFragment(),
         binding: FragmentTransactionFormBinding,
         accountUID: String?
     ) {
+        // `getPosition` answers -1 for an unknown uid, and `setSelection(-1)`
+        // would clear the spinner instead of keeping the current account.
         val position = accountTransferNameAdapter!!.getPosition(accountUID)
+        if (position < 0) return
         binding.inputTransferAccountSpinner.setSelection(position)
     }
 
@@ -701,6 +879,8 @@ class TransactionFormFragment : MenuFragment(),
 
         val transferAccount = getTransferAccount(binding) ?: return splitsList
         val transferAccountUID = transferAccount.uid
+        val debitAccount = getDebitAccount(binding) ?: account
+        val debitAccountUID = debitAccount.uid
 
         if (isMultiCurrencyTransaction(binding)) { //if multi-currency transaction
             val targetCommodity = transferAccount.commodity
@@ -722,18 +902,20 @@ class TransactionFormFragment : MenuFragment(),
             split1 = splitsList[0]
             split1.value = value
             split1.quantity = value
-            split1.accountUID = accountUID
+            split1.accountUID = debitAccountUID
 
             split2 = splitsList[1]
             split2.value = value
             split2.quantity = quantity
             split2.accountUID = transferAccountUID
         } else {
-            split1 = Split(value, account)
+            split1 = Split(value, debitAccount)
             split2 = Split(value, quantity, transferAccount)
         }
-        split1.type = binding.inputTransactionType.transactionType
-        split2.type = binding.inputTransactionType.transactionType.invert()
+        // The two sides are explicit (借方账户 / 贷方账户), so the split types come
+        // from *position* rather than from the now-hidden type switch.
+        split1.type = TransactionType.DEBIT
+        split2.type = TransactionType.CREDIT
 
         return listOf(split1, split2)
     }
@@ -787,7 +969,7 @@ class TransactionFormFragment : MenuFragment(),
      * @return `true` if split editor was used, `false` otherwise
      */
     private fun splitEditorUsed(binding: FragmentTransactionFormBinding): Boolean {
-        return !binding.inputTransactionType.isVisible
+        return splitEditorActive
     }
 
     /**
@@ -880,6 +1062,15 @@ class TransactionFormFragment : MenuFragment(),
     private fun maybeSaveTransaction(binding: FragmentTransactionFormBinding) {
         val view = binding.root
         if (canSave(binding)) {
+            // Both sides are listed with the same conditions now, so "the same
+            // account on both sides" is expressible — and it is not a transaction.
+            // Refuse it with a reason instead of silently writing an unbalanced pair.
+            if (useDoubleEntry && !splitEditorUsed(binding)
+                && getDebitAccount(binding)?.uid == getTransferAccount(binding)?.uid
+            ) {
+                snackLong(R.string.toast_transaction_sides_must_differ)
+                return
+            }
             saveTransaction(binding)
         } else {
             if (binding.inputTransactionAmount.value == null) {
@@ -976,7 +1167,8 @@ class TransactionFormFragment : MenuFragment(),
      */
     private fun canSave(binding: FragmentTransactionFormBinding): Boolean {
         return (useDoubleEntry && binding.inputTransactionAmount.isInputValid
-                && binding.inputTransferAccountSpinner.count > 0)
+                && binding.inputTransferAccountSpinner.count > 0
+                && binding.inputDebitAccountSpinner.count > 0)
                 || (!useDoubleEntry && binding.inputTransactionAmount.isInputValid)
     }
 
@@ -1108,6 +1300,10 @@ class TransactionFormFragment : MenuFragment(),
 
     companion object {
         private const val REQUEST_SPLIT_EDITOR = 0x11
+
+        /** Fragment-result keys of the two account pickers. */
+        const val REQUEST_DEBIT_ACCOUNT_SEARCH = "transaction_form_debit_account_search"
+        const val REQUEST_CREDIT_ACCOUNT_SEARCH = "transaction_form_credit_account_search"
 
         /**
          * Formats milliseconds into a date string of the format "dd MMM yyyy" e.g. 18 July 2012

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Contextual action bar for a search result selection. -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_bulk_select_all"
+        android:title="@string/bulk_select_all"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_bulk_edit"
+        android:title="@string/bulk_edit"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_bulk_delete"
+        android:title="@string/bulk_delete"
+        app:showAsAction="never" />
+</menu>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  "Bulk edit" dialog: pick one field, give one value, apply to every selected
+  transaction. The tag switch only appears for the tag field.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/bulk_edit_field"
+        android:textAppearance="?android:textAppearanceSmall" />
+
+    <Spinner
+        android:id="@+id/input_bulk_field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="40dp" />
+
+    <TextView
+        android:id="@+id/label_bulk_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/bulk_edit_value"
+        android:textAppearance="?android:textAppearanceSmall" />
+
+    <EditText
+        android:id="@+id/input_bulk_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="2"
+        android:singleLine="true"
+        tools:text="2026-01-31" />
+
+    <CheckBox
+        android:id="@+id/input_bulk_tag_remove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/bulk_edit_tag_remove"
+        android:visibility="gone"
+        tools:visibility="visible" />
+</LinearLayout>

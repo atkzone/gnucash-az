@@ -28,8 +28,15 @@ import org.gnucash.android.db.DatabaseSchema.CommonColumns
 import org.gnucash.android.db.DatabaseSchema.PriceEntry
 import org.gnucash.android.db.DatabaseSchema.RecurrenceEntry
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
+import org.gnucash.android.db.DatabaseSchema.SearchTemplateEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
+import org.gnucash.android.db.DatabaseSchema.SyncResolutionEntry
+import org.gnucash.android.db.DatabaseSchema.SyncStateEntry
+import org.gnucash.android.db.DatabaseSchema.TagEntry
+import org.gnucash.android.db.DatabaseSchema.TombstoneEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionTagEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionTemplateEntry
 import org.gnucash.android.db.MigrationHelper.importCommodities
 import org.gnucash.android.db.MigrationHelper.migrate
 import org.gnucash.android.model.Commodity
@@ -74,6 +81,13 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         db.execSQL(RECURRENCE_TABLE_CREATE)
         db.execSQL(BUDGETS_TABLE_CREATE)
         db.execSQL(BUDGET_AMOUNTS_TABLE_CREATE)
+        db.execSQL(SEARCH_TEMPLATES_TABLE_CREATE)
+        db.execSQL(TAGS_TABLE_CREATE)
+        db.execSQL(TRANSACTION_TAGS_TABLE_CREATE)
+        db.execSQL(SYNC_STATE_TABLE_CREATE)
+        db.execSQL(TOMBSTONES_TABLE_CREATE)
+        db.execSQL(SYNC_RESOLUTIONS_TABLE_CREATE)
+        db.execSQL(TRANSACTION_TEMPLATES_TABLE_CREATE)
 
         db.execSQL(createUpdatedAtTrigger(AccountEntry.TABLE_NAME))
         db.execSQL(createUpdatedAtTrigger(TransactionEntry.TABLE_NAME))
@@ -84,6 +98,9 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         db.execSQL(createUpdatedAtTrigger(RecurrenceEntry.TABLE_NAME))
         db.execSQL(createUpdatedAtTrigger(BudgetEntry.TABLE_NAME))
         db.execSQL(createUpdatedAtTrigger(BudgetAmountEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(TagEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(SyncStateEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(TombstoneEntry.TABLE_NAME))
 
         val createAccountUidIndex = ("CREATE UNIQUE INDEX '" + AccountEntry.INDEX_UID + "' ON "
                 + AccountEntry.TABLE_NAME + "(" + AccountEntry.COLUMN_UID + ")")
@@ -122,6 +139,15 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         db.execSQL(createBudgetUidIndex)
         db.execSQL(createRecurrenceUidIndex)
         db.execSQL(createBudgetAmountUidIndex)
+        for (statement in TAG_INDEX_STATEMENTS) {
+            db.execSQL(statement)
+        }
+        for (statement in SYNC_INDEX_STATEMENTS) {
+            db.execSQL(statement)
+        }
+        for (statement in SYNC_RESOLUTION_INDEX_STATEMENTS) {
+            db.execSQL(statement)
+        }
         createResetBalancesTriggers(db)
 
         try {
@@ -325,6 +351,241 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 + RecurrenceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + RecurrenceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP); "
                 )
+
+        /**
+         * SQL statement to create the saved search templates table (feature ①a).
+         *
+         * `IF NOT EXISTS` so the same statement can be reused both on create
+         * (v31+) and in [MigrationHelper] (30 → 31), where re-running must be a
+         * no-op rather than an error.
+         *
+         * `internal` (not private) because [MigrationHelper] needs it, mirroring
+         * how [PRICES_TABLE_CREATE] is shared.
+         */
+        internal const val SEARCH_TEMPLATES_TABLE_CREATE =
+            ("CREATE TABLE IF NOT EXISTS " + SearchTemplateEntry.TABLE_NAME + " ("
+                    + SearchTemplateEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + SearchTemplateEntry.COLUMN_NAME + " varchar(255) not null, "
+                    + SearchTemplateEntry.COLUMN_FORM + " text not null, "
+                    + SearchTemplateEntry.COLUMN_SORT_ORDER + " integer not null default 0, "
+                    + SearchTemplateEntry.COLUMN_CREATED_AT + " integer not null default 0, "
+                    + SearchTemplateEntry.COLUMN_UPDATED_AT + " integer not null default 0"
+                    + ");"
+                    )
+
+        /**
+         * SQL statement to create the local-only saved-transaction-template table
+         * (feature ①d).
+         *
+         * `IF NOT EXISTS` so the same statement can be reused both on create
+         * (v35+) and in [MigrationHelper] (34 → 35), where re-running must be a
+         * no-op rather than an error.
+         */
+        internal const val TRANSACTION_TEMPLATES_TABLE_CREATE =
+            ("CREATE TABLE IF NOT EXISTS " + TransactionTemplateEntry.TABLE_NAME + " ("
+                    + TransactionTemplateEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + TransactionTemplateEntry.COLUMN_NAME + " varchar(255) not null, "
+                    + TransactionTemplateEntry.COLUMN_PAYLOAD + " text not null, "
+                    + TransactionTemplateEntry.COLUMN_SORT_ORDER + " integer not null default 0, "
+                    + TransactionTemplateEntry.COLUMN_CREATED_AT + " integer not null default 0, "
+                    + TransactionTemplateEntry.COLUMN_UPDATED_AT + " integer not null default 0"
+                    + ");"
+                    )
+
+        /**
+         * SQL statement to create the tags table (feature ⑧).
+         *
+         * `IF NOT EXISTS` — the same statement is reused by [MigrationHelper]
+         * (31 → 32), where re-running must be a no-op. [TagEntry.COLUMN_NAME] is
+         * declared `COLLATE NOCASE` so "Food" and "food" are one tag, which also
+         * makes the correlated tag predicate in the search layer case-insensitive.
+         */
+        internal const val TAGS_TABLE_CREATE =
+            ("CREATE TABLE IF NOT EXISTS " + TagEntry.TABLE_NAME + " ("
+                    + TagEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + TagEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                    + TagEntry.COLUMN_NAME + " varchar(255) not null COLLATE NOCASE, "
+                    + TagEntry.COLUMN_COLOR + " varchar(255), "
+                    + TagEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + TagEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
+                    + ");"
+                    )
+
+        /**
+         * SQL statement to create the transaction↔tag join table (feature ⑧).
+         *
+         * Both foreign keys cascade, so links disappear together with their
+         * transaction or tag. [TransactionTagEntry.COLUMN_TAG] holds the tag
+         * **name** (case-insensitive) because that is what the search layer matches
+         * against — keeping the tag predicate a bare `WHERE` fragment.
+         */
+        internal const val TRANSACTION_TAGS_TABLE_CREATE =
+            ("CREATE TABLE IF NOT EXISTS " + TransactionTagEntry.TABLE_NAME + " ("
+                    + TransactionTagEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + TransactionTagEntry.COLUMN_TRANSACTION_UID + " varchar(255) not null, "
+                    + TransactionTagEntry.COLUMN_TAG + " varchar(255) not null COLLATE NOCASE, "
+                    + TransactionTagEntry.COLUMN_TAG_UID + " varchar(255), "
+                    + TransactionTagEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + "FOREIGN KEY (" + TransactionTagEntry.COLUMN_TRANSACTION_UID + ") REFERENCES "
+                    + TransactionEntry.TABLE_NAME + " (" + TransactionEntry.COLUMN_UID + ") ON DELETE CASCADE, "
+                    + "FOREIGN KEY (" + TransactionTagEntry.COLUMN_TAG_UID + ") REFERENCES "
+                    + TagEntry.TABLE_NAME + " (" + TagEntry.COLUMN_UID + ") ON DELETE CASCADE "
+                    + ");"
+                    )
+
+        /**
+         * Indexes for the tag tables. `IF NOT EXISTS` so [MigrationHelper] can reuse
+         * them; kept as **one statement per constant** because `execSQL` runs a
+         * single statement.
+         */
+        internal const val TAG_UID_INDEX_CREATE =
+            "CREATE UNIQUE INDEX IF NOT EXISTS '" + TagEntry.INDEX_UID + "' ON " +
+                    TagEntry.TABLE_NAME + "(" + TagEntry.COLUMN_UID + ");"
+
+        internal const val TAG_NAME_INDEX_CREATE =
+            "CREATE UNIQUE INDEX IF NOT EXISTS '" + TagEntry.INDEX_NAME + "' ON " +
+                    TagEntry.TABLE_NAME + "(" + TagEntry.COLUMN_NAME + " COLLATE NOCASE);"
+
+        internal const val TRANSACTION_TAG_UNIQUE_INDEX_CREATE =
+            "CREATE UNIQUE INDEX IF NOT EXISTS '" + TransactionTagEntry.INDEX_UNIQUE + "' ON " +
+                    TransactionTagEntry.TABLE_NAME + "(" + TransactionTagEntry.COLUMN_TRANSACTION_UID +
+                    ", " + TransactionTagEntry.COLUMN_TAG + ");"
+
+        internal const val TRANSACTION_TAG_TX_INDEX_CREATE =
+            "CREATE INDEX IF NOT EXISTS '" + TransactionTagEntry.INDEX_TRANSACTION + "' ON " +
+                    TransactionTagEntry.TABLE_NAME + "(" + TransactionTagEntry.COLUMN_TRANSACTION_UID + ");"
+
+        internal const val TRANSACTION_TAG_TAG_INDEX_CREATE =
+            "CREATE INDEX IF NOT EXISTS '" + TransactionTagEntry.INDEX_TAG + "' ON " +
+                    TransactionTagEntry.TABLE_NAME + "(" + TransactionTagEntry.COLUMN_TAG + ");"
+
+        /** All tag-table index statements in creation order (shared with [MigrationHelper]). */
+        internal val TAG_INDEX_STATEMENTS = arrayOf(
+            TAG_UID_INDEX_CREATE,
+            TAG_NAME_INDEX_CREATE,
+            TRANSACTION_TAG_UNIQUE_INDEX_CREATE,
+            TRANSACTION_TAG_TX_INDEX_CREATE,
+            TRANSACTION_TAG_TAG_INDEX_CREATE
+        )
+
+        /**
+         * SQL statement to create the sync base-snapshot table (feature ② v2).
+         *
+         * `IF NOT EXISTS` so the statement is shared with [MigrationHelper] (32 → 33,
+         * and again from 33 → 34, where the added columns are back-filled separately),
+         * where re-running must be a no-op. The `(record_type, record_key)` pair is
+         * unique — one base per record — and [SyncStateEntry.COLUMN_PAYLOAD] is
+         * opaque so the serialisation format can evolve freely.
+         *
+         * [SyncStateEntry.COLUMN_BASE_ETAG] and [SyncStateEntry.COLUMN_PENDING_SINCE]
+         * are part of the current (34) shape; an existing 33 table is upgraded by
+         * `migrateTo34`.
+         */
+        internal const val SYNC_STATE_TABLE_CREATE =
+            ("CREATE TABLE IF NOT EXISTS " + SyncStateEntry.TABLE_NAME + " ("
+                    + SyncStateEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + SyncStateEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                    + SyncStateEntry.COLUMN_RECORD_TYPE + " varchar(64) not null, "
+                    + SyncStateEntry.COLUMN_RECORD_KEY + " varchar(255) not null, "
+                    + SyncStateEntry.COLUMN_PAYLOAD + " text, "
+                    + SyncStateEntry.COLUMN_BASE_MODIFIED_AT + " integer not null default 0, "
+                    + SyncStateEntry.COLUMN_BASE_ETAG + " varchar(255), "
+                    + SyncStateEntry.COLUMN_PENDING_SINCE + " integer, "
+                    + SyncStateEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + SyncStateEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
+                    + ");"
+                    )
+
+        /**
+         * SQL statement to create the deletion-marker table (feature ② v2).
+         *
+         * `(record_type, record_key)` is unique so a record can only be tombstoned
+         * once; re-tombstoning is an upsert, never a duplicate.
+         */
+        internal const val TOMBSTONES_TABLE_CREATE =
+            ("CREATE TABLE IF NOT EXISTS " + TombstoneEntry.TABLE_NAME + " ("
+                    + TombstoneEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + TombstoneEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                    + TombstoneEntry.COLUMN_RECORD_TYPE + " varchar(64) not null, "
+                    + TombstoneEntry.COLUMN_RECORD_KEY + " varchar(255) not null, "
+                    + TombstoneEntry.COLUMN_DELETED_AT + " integer not null default 0, "
+                    + TombstoneEntry.COLUMN_DEVICE_ID + " varchar(255), "
+                    + TombstoneEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + TombstoneEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP"
+                    + ");"
+                    )
+
+        /**
+         * SQL statement to create the conflict-resolution table (feature ② v3).
+         *
+         * `IF NOT EXISTS` so the statement is shared with [MigrationHelper] (35 → 36), where
+         * re-running must be a no-op. There is no `uid`/timestamp pair here (see
+         * [SyncResolutionEntry]); `(record_type, record_key)` is the whole key, and a record
+         * can carry at most one pending answer — `putResolution` replaces rather than appends,
+         * so "keep local" after "keep remote" is one row, not two contradicting ones.
+         *
+         * Kept out of [SYNC_INDEX_STATEMENTS] on purpose: that array is replayed by the 32 → 33
+         * migration, where this table does not exist yet, and `CREATE INDEX` on a missing table
+         * is an error rather than a no-op.
+         */
+        internal const val SYNC_RESOLUTIONS_TABLE_CREATE =
+            ("CREATE TABLE IF NOT EXISTS " + SyncResolutionEntry.TABLE_NAME + " ("
+                    + SyncResolutionEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + SyncResolutionEntry.COLUMN_RECORD_TYPE + " varchar(64) not null, "
+                    + SyncResolutionEntry.COLUMN_RECORD_KEY + " varchar(255) not null, "
+                    + SyncResolutionEntry.COLUMN_SIDE + " varchar(16) not null"
+                    + ");"
+                    )
+
+        /**
+         * Index for the resolution table (feature ② v3). `IF NOT EXISTS`, and its own
+         * statement list, so [MigrationHelper] can reuse it without the 32 → 33 replay
+         * touching a table that does not exist at that point.
+         */
+        internal const val SYNC_RESOLUTION_RECORD_INDEX_CREATE =
+            "CREATE UNIQUE INDEX IF NOT EXISTS '" + SyncResolutionEntry.INDEX_UNIQUE + "' ON " +
+                    SyncResolutionEntry.TABLE_NAME + "(" + SyncResolutionEntry.COLUMN_RECORD_TYPE +
+                    ", " + SyncResolutionEntry.COLUMN_RECORD_KEY + ");"
+
+        /** Resolution-table index statements, shared verbatim with [MigrationHelper]. */
+        internal val SYNC_RESOLUTION_INDEX_STATEMENTS = arrayOf(
+            SYNC_RESOLUTION_RECORD_INDEX_CREATE
+        )
+
+        /**
+         * Indexes for the sync tables. `IF NOT EXISTS`, one statement per constant,
+         * so [MigrationHelper] can reuse them verbatim.
+         */
+        internal const val SYNC_STATE_UID_INDEX_CREATE =
+            "CREATE UNIQUE INDEX IF NOT EXISTS '" + SyncStateEntry.INDEX_UID + "' ON " +
+                    SyncStateEntry.TABLE_NAME + "(" + SyncStateEntry.COLUMN_UID + ");"
+
+        internal const val SYNC_STATE_RECORD_INDEX_CREATE =
+            "CREATE UNIQUE INDEX IF NOT EXISTS '" + SyncStateEntry.INDEX_UNIQUE + "' ON " +
+                    SyncStateEntry.TABLE_NAME + "(" + SyncStateEntry.COLUMN_RECORD_TYPE +
+                    ", " + SyncStateEntry.COLUMN_RECORD_KEY + ");"
+
+        internal const val SYNC_STATE_TYPE_INDEX_CREATE =
+            "CREATE INDEX IF NOT EXISTS '" + SyncStateEntry.INDEX_TYPE + "' ON " +
+                    SyncStateEntry.TABLE_NAME + "(" + SyncStateEntry.COLUMN_RECORD_TYPE + ");"
+
+        internal const val TOMBSTONE_UID_INDEX_CREATE =
+            "CREATE UNIQUE INDEX IF NOT EXISTS '" + TombstoneEntry.INDEX_UID + "' ON " +
+                    TombstoneEntry.TABLE_NAME + "(" + TombstoneEntry.COLUMN_UID + ");"
+
+        internal const val TOMBSTONE_RECORD_INDEX_CREATE =
+            "CREATE UNIQUE INDEX IF NOT EXISTS '" + TombstoneEntry.INDEX_UNIQUE + "' ON " +
+                    TombstoneEntry.TABLE_NAME + "(" + TombstoneEntry.COLUMN_RECORD_TYPE +
+                    ", " + TombstoneEntry.COLUMN_RECORD_KEY + ");"
+
+        /** All sync-table index statements in creation order (shared with [MigrationHelper]). */
+        internal val SYNC_INDEX_STATEMENTS = arrayOf(
+            SYNC_STATE_UID_INDEX_CREATE,
+            SYNC_STATE_RECORD_INDEX_CREATE,
+            SYNC_STATE_TYPE_INDEX_CREATE,
+            TOMBSTONE_UID_INDEX_CREATE,
+            TOMBSTONE_RECORD_INDEX_CREATE
+        )
 
         /**
          * Creates an update trigger to update the updated_at column for all records in the database.

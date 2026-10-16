@@ -43,6 +43,7 @@ import org.gnucash.android.ui.price.PriceDatabaseActivity
 import org.gnucash.android.ui.report.ReportsActivity
 import org.gnucash.android.ui.settings.BookManagerFragment.Companion.openBook
 import org.gnucash.android.ui.settings.PreferenceActivity
+import org.gnucash.android.ui.template.TransactionTemplatesActivity
 import org.gnucash.android.ui.transaction.ScheduledActionsActivity
 import org.gnucash.android.ui.transaction.TransactionsActivity
 import org.gnucash.android.util.BookUtils.activateBook
@@ -262,6 +263,8 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
             R.id.nav_item_reports -> ReportsActivity.show(context)
 
             R.id.nav_item_scheduled_actions -> ScheduledActionsActivity.show(context)
+
+            R.id.nav_item_transaction_templates -> TransactionTemplatesActivity.show(context)
 
             R.id.nav_item_export -> AccountsActivity.openExportFragment(context)
 

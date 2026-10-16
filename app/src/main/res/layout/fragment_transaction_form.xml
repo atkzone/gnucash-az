@@ -96,6 +96,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
                     android:checked="false"
+                    android:visibility="gone"
                     android:gravity="center_vertical"
                     android:textOff="@string/label_debit"
                     android:textOn="@string/label_credit"
@@ -118,18 +119,59 @@
             <View style="@style/Divider" />
 
             <LinearLayout
+                android:id="@+id/layout_debit_entry"
+                style="@style/FormRow">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minWidth="64dp"
+                    android:text="@string/label_debit_account"
+                    android:textAppearance="?android:textAppearanceSmall" />
+
+                <Spinner
+                    android:id="@+id/input_debit_account_spinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="40dp" />
+
+                <ImageView
+                    android:id="@+id/btn_search_debit_account"
+                    style="@style/FormIcon"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/title_search_debit_account"
+                    android:src="@drawable/ic_search" />
+            </LinearLayout>
+
+            <View style="@style/Divider" />
+
+            <LinearLayout
                 android:id="@+id/layout_double_entry"
                 style="@style/FormRow">
 
-                <ImageView
-                    style="@style/FormIcon"
-                    android:src="@drawable/ic_account" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:minWidth="64dp"
+                    android:text="@string/label_credit_account"
+                    android:textAppearance="?android:textAppearanceSmall" />
 
                 <Spinner
                     android:id="@+id/input_transfer_account_spinner"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:minHeight="40dp" />
+
+                <ImageView
+                    android:id="@+id/btn_search_credit_account"
+                    style="@style/FormIcon"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/title_search_credit_account"
+                    android:src="@drawable/ic_search" />
             </LinearLayout>
 
             <View style="@style/Divider" />

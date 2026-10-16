@@ -29,4 +29,12 @@
         android:icon="@android:drawable/ic_menu_day"
         android:title="@string/menu_show_absolute_date"
         app:showAsAction="never|withText" />
+
+    <!-- 一级菜单：不再套子菜单。开关不在这里 —— 扩展视图用不用由
+         "设置扩展显示"页里那个单选决定（第一行就是"不使用扩展显示"）。 -->
+    <item
+        android:id="@+id/menu_extended_view_settings"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="@string/menu_extended_view_settings"
+        app:showAsAction="never|withText" />
 </menu>

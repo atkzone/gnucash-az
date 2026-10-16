@@ -31,6 +31,11 @@
             android:key="@string/key_restore_backup"
             android:summary="@string/summary_restore_backup_pref"
             android:title="@string/title_restore_backup" />
+        <Preference
+            android:icon="@drawable/ic_import_backup"
+            android:key="@string/key_import_backup_file"
+            android:summary="@string/summary_import_backup_file"
+            android:title="@string/title_import_backup_file" />
         <SwitchPreference
             android:defaultValue="false"
             android:icon="@drawable/ic_dropbox"
@@ -91,6 +96,72 @@
             android:defaultValue="true"
             android:key="@string/key_compress_export"
             android:title="@string/option_compress_export" />
+    </PreferenceCategory>
+
+    <!--
+      WebDAV remote backup (feature ② v1). The address/user/password rows persist themselves
+      through androidx.preference; WebDavPreferences reads that same store.
+    -->
+    <PreferenceCategory android:title="@string/title_webdav_category">
+
+        <EditTextPreference
+            android:dialogTitle="@string/title_webdav_server_url"
+            android:inputType="textUri"
+            android:key="@string/key_webdav_server_url"
+            android:summary="@string/summary_webdav_server_url"
+            android:title="@string/title_webdav_server_url" />
+
+        <EditTextPreference
+            android:dialogTitle="@string/title_webdav_username"
+            android:inputType="textNoSuggestions"
+            android:key="@string/key_webdav_username"
+            android:summary="@string/summary_webdav_username"
+            android:title="@string/title_webdav_username" />
+
+        <EditTextPreference
+            android:dialogTitle="@string/title_webdav_password"
+            android:inputType="textPassword"
+            android:key="@string/key_webdav_password"
+            android:summary="@string/summary_webdav_password_unset"
+            android:title="@string/title_webdav_password" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/key_webdav_trust_all"
+            android:summary="@string/summary_webdav_trust_all"
+            android:title="@string/title_webdav_trust_all" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/key_webdav_allow_plaintext"
+            android:summary="@string/summary_webdav_allow_plaintext"
+            android:title="@string/title_webdav_allow_plaintext" />
+
+        <Preference
+            android:key="@string/key_webdav_test_connection"
+            android:summary="@string/summary_webdav_test_connection"
+            android:title="@string/title_webdav_test_connection" />
+
+        <Preference
+            android:key="@string/key_webdav_backup_now"
+            android:summary="@string/summary_webdav_backup_now"
+            android:title="@string/title_webdav_backup_now" />
+
+        <Preference
+            android:key="@string/key_webdav_restore_now"
+            android:summary="@string/summary_webdav_restore_now"
+            android:title="@string/title_webdav_restore_now" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/key_webdav_two_way_sync"
+            android:summary="@string/summary_webdav_two_way_sync"
+            android:title="@string/title_webdav_two_way_sync" />
+
+        <Preference
+            android:key="@string/key_webdav_sync_now"
+            android:summary="@string/summary_webdav_sync_now"
+            android:title="@string/title_webdav_sync_now" />
     </PreferenceCategory>
 
 </PreferenceScreen>

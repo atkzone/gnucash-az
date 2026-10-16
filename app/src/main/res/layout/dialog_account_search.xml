@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Account picker with a filter box. Shown from the transaction form's debit and
+  credit rows: the spinners are fine for a handful of accounts, but typing part
+  of the name is the only sane way to reach one in a large book.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="24dp">
+
+    <EditText
+        android:id="@+id/input_account_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_search_account"
+        android:imeOptions="actionSearch"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1"
+        android:singleLine="true" />
+
+    <ListView
+        android:id="@+id/list_accounts"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/empty_accounts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="24dp"
+        android:paddingBottom="24dp"
+        android:text="@string/label_no_matching_accounts"
+        android:textAppearance="?android:textAppearanceSmall"
+        android:visibility="gone"
+        tools:visibility="visible" />
+</LinearLayout>
